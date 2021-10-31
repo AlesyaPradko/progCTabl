@@ -64,12 +64,17 @@ namespace ConsoleApp3
                 for (int j = 1; j <= y.Columns.Count; j++)
                 {
                     Excel.Range s1 = x.Cells[u, j] as Excel.Range;
-                    if (s1 != null && s1.Value != null)
+                    if (s1 == null && s1.Value == null)
                     {
-                        mathes = regul.Matches(s1.Value.ToString());
+                        continue;
                     }
-                    else continue;
-                    if (mathes.Count > 0) { result = x.Cells[u, j] as Excel.Range; break; }
+
+                    mathes = regul.Matches(s1.Value.ToString());
+                    if (mathes.Count > 0) 
+                    { 
+                        result = x.Cells[u, j] as Excel.Range;
+                        break; 
+                    }
                 }
             }
             return result;
