@@ -7,7 +7,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ConsoleApp3
 {
-    public class Worker
+    public abstract class Worker
     {
         protected Dictionary<int, double> getVupoln;
         protected List<string> adresSmeta;
@@ -24,7 +24,17 @@ namespace ConsoleApp3
         public List<Excel.Workbook> CopySmet { get; set; }
         public List<Excel.Workbook> ContainPapkaKS { get; set; }
         public Dictionary<string, List<string>> KskSmete { get; set; }
-      
+
+        public void ProccessAll(string sx1, string sx2)
+        {
+            for (int num = 0; num < CopySmet.Count; num++)
+            {
+                ProcessSmeta(num, sx1, sx2);
+            }
+        }
+
+        protected abstract void ProcessSmeta(int num, string sx1, string sx2);
+
         public  void Zakrutie(List<string> adrSm, Dictionary<string, List<string>> ksSm, List<Excel.Workbook> contPapKS, List<string> adrKS, List<Excel.Workbook> copS,int n, Excel.Worksheet exc, Excel.Range r)
         {
             Console.WriteLine("Zakrutie");

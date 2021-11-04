@@ -11,29 +11,29 @@ namespace ConsoleApp3
     {
         public Tehnadzor():base()
         { }
-        public  void Workliketehnadzor(int num, List<Excel.Workbook> copyS, List<string> adresSm, List<string> adrKS, List<Excel.Workbook> containPapKS, Dictionary<string, List<string>> kskSm,string s1,string s2)
+        protected override void ProcessSmeta(int num, string sx1, string sx2)
         {
             //Console.WriteLine("Workliketehnadzor");
             Excel.Worksheet Sheetcopy;
-            Sheetcopy = copyS[num].Sheets[1];
+            Sheetcopy = CopySmet[num].Sheets[1];
             Excel.Range rangecopy;
-            rangecopy = Sheetcopy.get_Range(s1, s2);
+            rangecopy = Sheetcopy.get_Range(sx1, sx2);
             Excel.Range firkeysm = rangecopy.Find("Номер") as Excel.Range;
             Excel.Range firvalsm = rangecopy.Find("Количество") as Excel.Range;
             string sk;
             int a = firvalsm.Column + 1;
-            for (int v = 0; v < kskSm[adresSm[num]].Count; v++)
+            for (int v = 0; v < KskSmete[AdresSmeta[num]].Count; v++)
             {
-                for (int i = 0; i < containPapKS.Count; i++)
+                for (int i = 0; i < ContainPapkaKS.Count; i++)
                 {
-                    if (adrKS[i] != kskSm[adresSm[num]][v]) continue;
+                    if (AdresKS[i] != KskSmete[AdresSmeta[num]][v]) continue;
                     else
                     {
                         sk="Акт КС-2 №";
                         Excel.Worksheet workSheet;
-                        workSheet = containPapKS[i].Sheets[1];
+                        workSheet = ContainPapkaKS[i].Sheets[1];
                         Excel.Range range;
-                        range = workSheet.get_Range(s1, s2);
+                        range = workSheet.get_Range(sx1, sx2);
                         RegexReg regul = new RegexReg();
                         Excel.Range firstkey = range.Find("по смете") as Excel.Range;
                         Excel.Range otregexval = ParserExc.GetCell(workSheet, range, regul.regexval);
@@ -57,7 +57,7 @@ namespace ConsoleApp3
                         sk += " ";
                         getVupoln = ParserExc.Getvupoln(workSheet, range, firstkey, otregexval);
                         ParserExc.Zapisinfile(getVupoln, firkeysm, firvalsm, Sheetcopy, rangecopy, sk, a);
-                        ParserExc.FormatZapis(num,adresSm,i,adrKS,firkeysm, firvalsm, Sheetcopy, rangecopy);
+                        ParserExc.FormatZapis(num,AdresSmeta,i,AdresKS,firkeysm, firvalsm, Sheetcopy, rangecopy);
                         Marshal.FinalReleaseComObject(range);
                         Marshal.FinalReleaseComObject(workSheet);
                         a += 1;
@@ -116,7 +116,8 @@ namespace ConsoleApp3
                     //            Console.Write(forYach.Value2.ToString() + "\t");
                     //    }
                     //}
-             Zakrutie(adresSm, kskSm, containPapKS, adrKS, copyS, num, Sheetcopy, rangecopy);
+             Zakrutie(AdresSmeta, KskSmete, ContainPapkaKS, AdresKS, CopySmet, num, Sheetcopy, rangecopy);
         }
+
     }
 }
