@@ -172,33 +172,6 @@ namespace ConsoleApp3
                         break;
                 }
 
-
-
-
-
-                //for (int u = 0; u < Tabl.CopySmet.Count; u++)
-                //{
-                //    switch (selector)
-                //    {
-                //        case ChangeMod.expert:
-                //            {
-                //                Expert ob = new Expert();
-                //                ob.Worklikeexpert(u, Tabl.CopySmet, Tabl.AdresSmeta, Tabl.AdresKS, Tabl.ContainPapkaKS, Tabl.KskSmete, sx1, sx2);
-                //                break;
-                //            }
-                //        case ChangeMod.tehnadzor:
-                //            {
-                //                Tehnadzor ob = new Tehnadzor();
-                //                del = ob.Workliketehnadzor;
-                //                del(u, Tabl.CopySmet, Tabl.AdresSmeta, Tabl.AdresKS, Tabl.ContainPapkaKS, Tabl.KskSmete, sx1, sx2);
-                //                break;
-                //            }
-                //        default:
-                //            Console.WriteLine("Вы ввели неверный символ ");
-                //            break;
-                //    }
-                //}
-
                 excelApp.Quit();
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
