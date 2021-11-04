@@ -12,56 +12,87 @@ public enum ChangeMod { expert=49, tehnadzor=50 };
 
 namespace ConsoleApp3
 {
+   public class ZapredelException:Exception
+    {
+        public string parName;
+        public ZapredelException(string s)
+        { parName = s; }
+    }
+    public class DonthaveExcelException : Exception
+    {
+        public string paName;
+        public DonthaveExcelException(string s)
+        { paName = s; }
+    }
     class Program
     {
+        public delegate void regim(int n, List<Excel.Workbook> cop, List<string> adS, List<string> adK, List<Excel.Workbook> cPap, Dictionary<string, List<string>> kS,string s1, string s2);
         static void Main(string[] args)
         {
-            Excel.Workbook excelBookcopy = ParserExc.CopyExcel(@"D:\Книга 6.xlsx", @"D:\икси 2\Копия сметы.xlsx");
-            Excel.Worksheet Sheetcopy;
-            Sheetcopy = excelBookcopy.Sheets[1];
-            Excel.Range rangecopy;
-            rangecopy = Sheetcopy.get_Range("A1", "L40");
-            Excel.Range firkeysm = rangecopy.Find("Номер") as Excel.Range;
-            Excel.Range firvalsm = rangecopy.Find("Количество") as Excel.Range;
-            List<Excel.Workbook> ListKS = ParserExc.GetListKS(@"D:\икси");
-            Console.WriteLine("Выберите режим эксперт(нажмите 1) или техназор(нажмите 2)");
-            ChangeMod chan;
-            int changeregim = (int)(Console.ReadKey().Key); 
-            chan = (ChangeMod)changeregim;
-            switch (chan)
+            Excel.Application excelApp = Proverka.Instance;
+            Worker Tabl = new Worker();
+            //планируется выбор папки пользователем, где лежат сметы, поэтому значение полю задается в Main
+            try
             {
-                case ChangeMod.expert: ParserExc.Worklikeexpert(ListKS,Sheetcopy, rangecopy, firkeysm, firvalsm);break;
-                case ChangeMod.tehnadzor: ParserExc.Workliketehnadzor(ListKS, Sheetcopy, rangecopy,firkeysm, firvalsm); break;
-                default:
-                    Console.WriteLine("Вы ввели неверный символ ");
-                    break;
-            }
-           
-            for (int i = 1; i <= rangecopy.Rows.Count; i++)
-            {       
-                Console.Write("\r\n");
-                for (int j = 1; j <= rangecopy.Columns.Count; j++)
+                string usersmetu = @"D:\иксу";
+                Tabl.ContainPapkaSmeta = ParserExc.GetListKS(usersmetu, excelApp);
+                Tabl.AdresSmeta = ParserExc.Getstring(usersmetu);
+                if (Tabl.ContainPapkaSmeta.Count==0 || Tabl.AdresSmeta.Count == 0) throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
+                //планируется выбор папки пользователем, где лежат Акты КС-2, поэтому значение полю задается в Main
+                string userKS = @"D:\икси";
+                Tabl.AdresKS = ParserExc.Getstring(userKS);
+                //планируется выбор папки пользователем, куда сохранить измененные сметы, поэтому значение полю задается в Main
+                string userwheresave = @"D:\икси 2";
+                userwheresave += "\\Копия";
+                Tabl.CopySmet = ParserExc.MadeCopyExcbook(userwheresave, usersmetu, excelApp, Tabl.ContainPapkaSmeta, Tabl.AdresSmeta);
+                Tabl.ContainPapkaKS = ParserExc.GetListKS(userKS, excelApp);
+                if (Tabl.ContainPapkaKS.Count == 0 || Tabl.AdresKS.Count == 0) throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
+                Tabl.KskSmete = ParserExc.GetContainSM(Tabl.ContainPapkaKS, Tabl.AdresSmeta, Tabl.AdresKS);
+                //планируется по кнопке на выбор для каждого режима
+                Console.WriteLine("Выберите режим эксперт(нажмите 1) или техназор(нажмите 2)");
+                ChangeMod chan;
+                int changeregim = (int)(Console.ReadKey().Key);
+                chan = (ChangeMod)changeregim;
+                regim del;
+                string sx1 = "A1";
+                string sx2 = "L120";
+                for (int u = 0; u < Tabl.CopySmet.Count; u++)
                 {
-                    Excel.Range forYach = Sheetcopy.Cells[i, j] as Excel.Range;           
-                    if (forYach != null && forYach.Value2 != null)
-                        Console.Write(forYach.Value2.ToString() + "\t");
+                    switch (chan)
+                    {
+                        case ChangeMod.expert:
+                            {
+                                Expert ob = new Expert();
+                                del = ob.Worklikeexpert;
+                                del(u, Tabl.CopySmet, Tabl.AdresSmeta, Tabl.AdresKS, Tabl.ContainPapkaKS, Tabl.KskSmete, sx1, sx2);
+                                break;
+                            }
+                        case ChangeMod.tehnadzor:
+                            {
+                                Tehnadzor ob = new Tehnadzor();
+                                del = ob.Workliketehnadzor;
+                                del(u, Tabl.CopySmet, Tabl.AdresSmeta, Tabl.AdresKS, Tabl.ContainPapkaKS, Tabl.KskSmete, sx1, sx2);
+                                break;
+                            }
+                        default:
+                            Console.WriteLine("Вы ввели неверный символ ");
+                            break;
+                    }
                 }
-            }
-            object misValue = System.Reflection.Missing.Value;
-            for (int i = 0; i < ListKS.Count; i++)
-            {
-                ListKS[i].Close(false, misValue, misValue);
-                Marshal.FinalReleaseComObject(ListKS[i]);
-            }
-            Marshal.FinalReleaseComObject(rangecopy);
-            Marshal.FinalReleaseComObject(Sheetcopy);
-            excelBookcopy.Close(true, misValue, misValue);
-            Marshal.FinalReleaseComObject(excelBookcopy);
-            ParserExc.Proverka().Quit();
+            
+            excelApp.Quit();
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
             GC.WaitForPendingFinalizers();
+            }
+            catch (DirectoryNotFoundException exc)
+            { Console.WriteLine(exc.Message); }
+            catch (DonthaveExcelException ex)
+            { Console.WriteLine(ex.paName); }
+            catch (COMException exc)
+            { Console.WriteLine(exc.Message); }
+           
             Console.ReadLine();
         }
     }

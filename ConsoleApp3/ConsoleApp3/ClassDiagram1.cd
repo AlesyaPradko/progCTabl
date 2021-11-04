@@ -1,28 +1,56 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="ConsoleApp3.Program" Collapsed="true">
-    <Position X="9.75" Y="1" Width="1.5" />
+    <Position X="6.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
       <FileName>Program.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="ConsoleApp3.RegexReg">
-    <Position X="3.5" Y="1" Width="1.5" />
+  <Class Name="ConsoleApp3.RegexReg" Collapsed="true">
+    <Position X="5.25" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAAAAAAAABAAAAAAIAAAAAAAgACAAA=</HashCode>
+      <HashCode>AAACAAAAAAAAAAAAAAAABABAAAAAAIAAAAAAAgACAAA=</HashCode>
       <FileName>RegexReg.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="ConsoleApp3.ParserExc">
-    <Position X="6" Y="2" Width="1.5" />
+  <Class Name="ConsoleApp3.ParserExc" Collapsed="true">
+    <Position X="3.5" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>QAQAAAEAAAEAAAAAAAAAAgAAAAAQAAABAAAQACQABgA=</HashCode>
+      <HashCode>QAAAAAEAEAFAAAAAAAAAABAAAAQQAAABAAAQAAQABgA=</HashCode>
       <FileName>ParserExc.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="ConsoleApp3.Proverka" Collapsed="true">
+    <Position X="1.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>Proverka.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ConsoleApp3.Expert" Collapsed="true">
+    <Position X="4.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAQCAAAEABAAAAAAAAAAAAAAAAAAAAAAAACAEAAA=</HashCode>
+      <FileName>Expert.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ConsoleApp3.Tehnadzor" Collapsed="true">
+    <Position X="2.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAIAAAAAA=</HashCode>
+      <FileName>Tehnadzor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ConsoleApp3.Worker" Collapsed="true">
+    <Position X="3.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IRAAACEAQAAAAECBAAAAgAAAgAAAEIAAAAAAAAAAAAA=</HashCode>
+      <FileName>Worker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Enum Name="XlInsertShiftDirection" Collapsed="true">
-    <Position X="9.75" Y="2.25" Width="1.5" />
+    <Position X="5.25" Y="3.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>ParserExc.cs</FileName>
