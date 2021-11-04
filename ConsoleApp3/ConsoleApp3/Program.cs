@@ -30,30 +30,45 @@ namespace ConsoleApp3
         static void Main(string[] args)
         {
             Excel.Application excelApp = Proverka.Instance;
-            Worker Tabl = new Worker();
             //планируется выбор папки пользователем, где лежат сметы, поэтому значение полю задается в Main
             try
             {
                 string usersmetu = @"D:\иксу";
-                Tabl.ContainPapkaSmeta = ParserExc.GetListKS(usersmetu, excelApp);
-                Tabl.AdresSmeta = ParserExc.Getstring(usersmetu);
-                if (Tabl.ContainPapkaSmeta.Count==0 || Tabl.AdresSmeta.Count == 0) throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
+                //Tabl.ContainPapkaSmeta = ParserExc.GetListKS(usersmetu, excelApp);
+                var containPapkaSmeta = ParserExc.GetListKS(usersmetu, excelApp);
+
+                //Tabl.AdresSmeta = ParserExc.Getstring(usersmetu);
+                var adresSmeta = ParserExc.Getstring(usersmetu);
+                if (containPapkaSmeta.Count==0 || adresSmeta.Count == 0)
+                { 
+                    throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
+                }
+
+
                 //планируется выбор папки пользователем, где лежат Акты КС-2, поэтому значение полю задается в Main
                 string userKS = @"D:\икси";
-                Tabl.AdresKS = ParserExc.Getstring(userKS);
+                //Tabl.AdresKS = ParserExc.Getstring(userKS);
+                var adresKS = ParserExc.Getstring(userKS);
+
                 //планируется выбор папки пользователем, куда сохранить измененные сметы, поэтому значение полю задается в Main
                 string userwheresave = @"D:\икси 2";
                 userwheresave += "\\Копия";
-                Tabl.CopySmet = ParserExc.MadeCopyExcbook(userwheresave, usersmetu, excelApp, Tabl.ContainPapkaSmeta, Tabl.AdresSmeta);
-                Tabl.ContainPapkaKS = ParserExc.GetListKS(userKS, excelApp);
-                if (Tabl.ContainPapkaKS.Count == 0 || Tabl.AdresKS.Count == 0) throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
-                Tabl.KskSmete = ParserExc.GetContainSM(Tabl.ContainPapkaKS, Tabl.AdresSmeta, Tabl.AdresKS);
+                //Tabl.CopySmet = ParserExc.MadeCopyExcbook(userwheresave, usersmetu, excelApp, Tabl.ContainPapkaSmeta, Tabl.AdresSmeta);
+                //Tabl.ContainPapkaKS = ParserExc.GetListKS(userKS, excelApp);
+                var copySmet = ParserExc.MadeCopyExcbook(userwheresave, usersmetu, excelApp, containPapkaSmeta, adresSmeta);
+                var containPapkaKS = ParserExc.GetListKS(userKS, excelApp);
+                if (containPapkaKS.Count == 0 || adresKS.Count == 0)
+                {
+                    throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
+                }
+                //Tabl.KskSmete = ParserExc.GetContainSM(Tabl.ContainPapkaKS, Tabl.AdresSmeta, Tabl.AdresKS);
+                var kskSmete = ParserExc.GetContainSM(containPapkaKS, adresSmeta, adresKS);
+
                 //планируется по кнопке на выбор для каждого режима
                 Console.WriteLine("Выберите режим эксперт(нажмите 1) или техназор(нажмите 2)");
                 ChangeMod chan;
                 int changeregim = (int)(Console.ReadKey().Key);
-                chan = (ChangeMod)changeregim;
-                regim del;
+                chan = (ChangeMod)Console.ReadKey().Key;
                 string sx1 = "A1";
                 string sx2 = "L120";
                 for (int u = 0; u < Tabl.CopySmet.Count; u++)
@@ -63,8 +78,7 @@ namespace ConsoleApp3
                         case ChangeMod.expert:
                             {
                                 Expert ob = new Expert();
-                                del = ob.Worklikeexpert;
-                                del(u, Tabl.CopySmet, Tabl.AdresSmeta, Tabl.AdresKS, Tabl.ContainPapkaKS, Tabl.KskSmete, sx1, sx2);
+                                ob.Worklikeexpert(u, Tabl.CopySmet, Tabl.AdresSmeta, Tabl.AdresKS, Tabl.ContainPapkaKS, Tabl.KskSmete, sx1, sx2);
                                 break;
                             }
                         case ChangeMod.tehnadzor:
