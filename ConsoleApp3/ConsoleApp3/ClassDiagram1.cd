@@ -10,14 +10,14 @@
   <Class Name="ConsoleApp3.RegexReg" Collapsed="true">
     <Position X="5.25" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAAAAAABABAAAAAAIAAAAAAAgACAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAABABAAAAAAIAAAAAAAAACAAA=</HashCode>
       <FileName>RegexReg.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="ConsoleApp3.ParserExc" Collapsed="true">
     <Position X="3.5" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>QAAAAAEAEAFAAAAAAAAAABAAAAQQAAABAAAQAAQABgA=</HashCode>
+      <HashCode>QAAAAAEAEAEAAAAAAAAAABAAAAQQAAAAAAAQAAQABgA=</HashCode>
       <FileName>ParserExc.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -31,22 +31,29 @@
   <Class Name="ConsoleApp3.Expert" Collapsed="true">
     <Position X="4.75" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AIAAAQCAAAEABAAAAAAAAAAAAAAAAAAAAAAAACAEAAA=</HashCode>
+      <HashCode>AAQAAACAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Expert.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="ConsoleApp3.Tehnadzor" Collapsed="true">
     <Position X="2.25" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAIAAAAAA=</HashCode>
+      <HashCode>BAAAAAAAAAAAAgAAAAAAAAAAAAAAAAABAAAAAAAAAAg=</HashCode>
       <FileName>Tehnadzor.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="ConsoleApp3.Worker" Collapsed="true">
     <Position X="3.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>IRAAACEAQAAAAECBAAAAgAAAgAAAEIAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AQAAACAAAAFAAkABAAAAgAAAgAIAEAAAAQAAAACAAAA=</HashCode>
       <FileName>Worker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ConsoleApp3.RangeFile" Collapsed="true">
+    <Position X="7.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAgAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>RangeFile.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Enum Name="XlInsertShiftDirection" Collapsed="true">

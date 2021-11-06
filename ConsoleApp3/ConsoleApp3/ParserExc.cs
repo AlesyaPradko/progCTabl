@@ -15,16 +15,16 @@ namespace ConsoleApp3
     public static class ParserExc
     {
         //метод копирует одну книгу иксель по заданоому адресу
-        public static Excel.Workbook CopyExcel(string s, string d, Excel.Application e)
+        private static Excel.Workbook CopyExcel(string test, string t2, Excel.Application excelApp)
         {
             //Console.WriteLine("CopyExcel");
-            Excel.Workbook excelBooksm = e.Workbooks.Open(s);
-            if (!File.Exists(d))
+            Excel.Workbook excelBooksm = excelApp.Workbooks.Open(test);
+            if (!File.Exists(t2))
             {
-                excelBooksm.SaveCopyAs(d);
+                excelBooksm.SaveCopyAs(t2);
             }
             excelBooksm.Close(false, Type.Missing, Type.Missing);
-            Excel.Workbook excelBookco = e.Workbooks.Open(d);
+            Excel.Workbook excelBookco = excelApp.Workbooks.Open(t2);
             return excelBookco;
         }
         //метод возвращает лист строк с адресами смет и кс
@@ -45,7 +45,7 @@ namespace ConsoleApp3
             return normal;
         }
         //запись файлов с Актами КС-2 в лист книг Excel
-        public static List<Excel.Workbook> GetListKS(string s, Excel.Application e)
+        public static List<Excel.Workbook> GetListKS(string s, Excel.Application excelApp)
         {
             //Console.WriteLine("GetListKS");
             string[] gt = Directory.GetFiles(s);
@@ -56,88 +56,89 @@ namespace ConsoleApp3
                 if (!oc.Contains(".xlsx")) continue;
                 else
                 {
-                    Excel.Workbook listKSone = e.Workbooks.Open(oc);
+                    Excel.Workbook listKSone = excelApp.Workbooks.Open(oc);
                     listK.Add(listKSone);
                 }
             }
             return listK;
         }
         //копирует последовательно все сметы в выбранную папку
-        public static List<Excel.Workbook> MadeCopyExcbook(string hran, string s, Excel.Application ex, List<Excel.Workbook> dd, List<string> adr)
+        public static List<Excel.Workbook> MadeCopyExcbook(string userwheresave, string usersmetu, Excel.Application excelApp, List<Excel.Workbook> ContainPapkaSmeta, List<string> AdresSmeta)
         {
             //Console.WriteLine("MadeCopyExcbook");
             List<Excel.Workbook> excelBookcopy = new List<Excel.Workbook>();
             string test, t2;
-            for (int u = 0; u < dd.Count; u++)
+            for (int u = 0; u < ContainPapkaSmeta.Count; u++)
             {
-                t2 = hran;
-                test = adr[u];
-                string d = test.Remove(0, s.Length + 1);
-                t2 += " ";
-                t2 += d;
-                Excel.Workbook excelBook = ParserExc.CopyExcel(test, t2, ex);
+                t2 = userwheresave;
+                test = AdresSmeta[u];
+                string d = test.Remove(0, usersmetu.Length + 1);
+                t2 += $" {d}";
+                Excel.Workbook excelBook = CopyExcel(test, t2, excelApp);
                 excelBookcopy.Add(excelBook);
             }
             return excelBookcopy;
         }
         //метод возвращает словарь, ключ - адрес сметы, 
-        public static Dictionary<string, List<string>> GetContainSM(List<Excel.Workbook> bb, List<string> aa, List<string> cc)
+        public static Dictionary<string, List<string>> GetContainSM(List<Excel.Workbook> ContainPapkaKS, List<string> AdresSmeta, List<string> AdresKS)
         {
            // Console.WriteLine("GetContainSM");
             Dictionary<string, List<string>> forSM = new Dictionary<string, List<string>>();
             RegexReg reg = new RegexReg();
-            for (int u = 0; u < aa.Count; u++)
+            for (int u = 0; u < AdresSmeta.Count; u++)
             {
                 string re = null;
-                MatchCollection mathes = reg.namesmet.Matches(aa[u]);
+                MatchCollection mathes = reg.namesmet.Matches(AdresSmeta[u]);
                 if (mathes.Count > 0)
                 {
                     foreach (Match math in mathes)
                         re = math.Value;
                 }
                 List<string> forsm = new List<string>();
-                for (int c = 0; c < bb.Count; c++)
+                for (int c = 0; c < ContainPapkaKS.Count; c++)
                 {
-                    Excel.Worksheet workShet;
-                    workShet = bb[c].Sheets[1];
-                    Excel.Range rang;
-                    rang = workShet.get_Range("A1", "I20");
+                    Excel.Worksheet workShet = ContainPapkaKS[c].Sheets[1];
+                    Excel.Range rang = workShet.get_Range("A1", "I20");
                     if (rang.Find(re) == null) continue;
-                    else forsm.Add(cc[c]);
+                    else forsm.Add(AdresKS[c]);
                     Marshal.FinalReleaseComObject(rang);
                     Marshal.FinalReleaseComObject(workShet);
                 }
-                forSM.Add(aa[u], forsm);
+                forSM.Add(AdresSmeta[u], forsm);
             }
             return forSM;
         }
         //метод возвращает необходимую ячейку
-        public static Excel.Range GetCell(Excel.Worksheet x, Excel.Range y, Regex regul)
+        public static Excel.Range GetCell(Excel.Worksheet workSheet, Excel.Range range, Regex regul)
         {
             //Console.WriteLine("GetCell");
             MatchCollection mathes;
             Excel.Range result = null;
-            for (int u = 1; u <= y.Rows.Count; u++)
+            for (int u = 1; u <= range.Rows.Count; u++)
             {
-                for (int j = 1; j <= y.Columns.Count; j++)
+                for (int j = 1; j <= range.Columns.Count; j++)
                 {
-                    Excel.Range s1 = x.Cells[u, j] as Excel.Range;
+                    Excel.Range s1 = workSheet.Cells[u, j];
                     if (s1 != null && s1.Value != null)
                     {
                         mathes = regul.Matches(s1.Value.ToString());
                     }
                     else continue;
-                    if (mathes.Count > 0) { result = x.Cells[u, j] as Excel.Range; break; }
+                    if (mathes.Count > 0)
+                    { 
+                        result = workSheet.Cells[u, j];
+                        break;
+                    }
                 }
             }
             return result;
         }
         //метод возвращает строку с записанной датой составления акта для последующей обработки
-        public static string Finddate(Regex a, Excel.Range dat)
+        public static string Finddate(Regex a, Excel.Range finddata)
         {
             //Console.WriteLine(" Finddate");
             string sg = null;
-            MatchCollection god = a.Matches(dat.Value.ToString());
+            MatchCollection god = a.Matches(finddata.Value.ToString());
             if (god.Count > 0)
             {
                 foreach (Match math in god)
@@ -148,17 +149,17 @@ namespace ConsoleApp3
             return sg;
         }
         //метод возвращает строку где месяц записан прописью
-        public static string Mespropis(string s)
+        public static string Mespropis(string smes)
         {
             //Console.WriteLine(" Mespropis");
             string sm = null;
             int mesac = 0;
             int f = 10;
-            for (int j = 0; j < s.Length; j++)
+            for (int j = 0; j < smes.Length; j++)
             {
-                if (s[j] >= '0' && s[j] <= '9')
+                if (smes[j] >= '0' && smes[j] <= '9')
                 {
-                    mesac += (s[j] - '0') * f;
+                    mesac += (smes[j] - '0') * f;
                     f /= 10;
                 }
             }
@@ -180,16 +181,16 @@ namespace ConsoleApp3
             return sm;
         }
         //метод возвращает словарь где в ключ записан номер позиции по смете из Акта КС-2, а значение - объем работ по этой позиции
-        public static Dictionary<int, double> Getvupoln(Excel.Worksheet x, Excel.Range y, Excel.Range f, Excel.Range e)
+        public static Dictionary<int, double> Getvupoln(Excel.Worksheet workSheet, Excel.Range range, Excel.Range firstkey, Excel.Range otregexval)
         {
             //Console.WriteLine("Getvupoln");
             Dictionary<int, double> W = new Dictionary<int, double>();
             int n1;
             double n2;
-            for (int j = f.Row + 2; j <= y.Rows.Count; j++)
+            for (int j = firstkey.Row + 2; j <= range.Rows.Count; j++)
             {
-                Excel.Range forY2 = x.Cells[j, f.Column] as Excel.Range;
-                Excel.Range forY3 = x.Cells[j, e.Column] as Excel.Range;
+                Excel.Range forY2 = workSheet.Cells[j, firstkey.Column];
+                Excel.Range forY3 = workSheet.Cells[j, otregexval.Column];
                 if (forY2 != null && forY2.Value2 != null && forY3 != null && forY3.Value2 != null&& forY3.Value2.ToString() != ""&&forY2.Value2.ToString() != ""&& !forY2.MergeCells&& !forY3.MergeCells)
                 {
                     n1 = Convert.ToInt32(forY2.Value2);
@@ -199,80 +200,19 @@ namespace ConsoleApp3
             }
             return W;
         }
-        //метод записывает в файл копии сметы объемы из Актов КС-2, каждый месяц в новый столбец,
-        //вставка столбцов идет за столбцом объемы по смете  
-        public static void Zapisinfile(Dictionary<int, double> V, Excel.Range fk, Excel.Range fv, Excel.Worksheet excS, Excel.Range r, string zx, int aa)
-        {
-            //Console.WriteLine(" Zapisinfile");
-            ICollection keyColl = V.Keys;
-            ICollection valColl = V.Values;
-            int ob1=0;
-            for (int j = fk.Row; j <= r.Rows.Count; j++)
-            {
-                Excel.Range forYs = excS.Cells[j, aa] as Excel.Range;
-                forYs.Insert(XlInsertShiftDirection.xlShiftToRight);
-                if (j > fk.Row+1)
-                {
-                    Excel.Range forY4 = excS.Cells[j, fk.Column] as Excel.Range;
-                    if (forY4 != null && forY4.Value2 != null && forY4.Value2.ToString() != "" && !forY4.MergeCells)
-                    {
-                        ob1 = Convert.ToInt32(forY4.Value2);
-                        foreach (int ob in keyColl)
-                        {
-                            if (ob1 == ob) excS.Cells[j, aa] = V[ob];
-                        }
-                    }
-                }
-            }
-            excS.Cells[fk.Row, aa] = zx;
-        }
-        //метод задает формат записи в файл иксель
-        public static void FormatZapis(int n,List<string>  ad,int i, List<string> adr,Excel.Range fk, Excel.Range fv, Excel.Worksheet excS, Excel.Range r)
-        {
-            //Console.WriteLine("FormatZapis");
-            try
-            {
-                int shir = 0, vus = 0,test=0;
-                for (int y = fk.Row; y <= r.Rows.Count; y++)
-                {
-                    Excel.Range fors = excS.Cells[y, fk.Column] as Excel.Range;
-                    if (fors != null && fors.Value2 != null) vus++;
-                    else { test++; if (fors != null && fors.Value2 != null) { vus += test; test = 0; } test = 0; }
-                    if (test>5) break;
-                    //Console.WriteLine(vus);
-                }
-                test = 0;
-                for (int x = fk.Column; x <= r.Columns.Count; x++)
-                {
-                    Excel.Range fors = excS.Cells[fk.Row, x] as Excel.Range;
-                    if (fors != null && fors.Value2 != null) shir++;
-                    else { test++; if (fors != null && fors.Value2 != null) { shir += test; test = 0; } }
-                    if (test > 5) break;
-                    
-                }
-                Excel.Range flast = excS.Cells[fk.Row + vus+1, fk.Column + shir] as Excel.Range;
-                if (flast.Column == r.Columns.Count || flast.Row == r.Rows.Count) { throw new ZapredelException($"Вы задали слишком малую область для {ad[n]} и для {adr[i]}"); return; }
-                Excel.Range forIs = excS.get_Range(fk, flast);
-                forIs.Cells.Borders.Weight = Excel.XlBorderWeight.xlMedium;
-                forIs.EntireColumn.Font.Size = 13;
-                forIs.EntireColumn.HorizontalAlignment = Excel.Constants.xlCenter;
-                forIs.EntireColumn.AutoFit();
-            }
-            catch (ZapredelException exc)
-            { Console.WriteLine(exc.parName); }
-        }
+        
 
         //метод возвращает словарь где в ключ записан номер позиции по смете из Акта КС-2, а значение - нулл,
         //при записи в режиме эксперт в него будут суммироваться значения из Актов КС-2 в общей графе в смете
-        public static Dictionary<int, T> Getkeysm<T>(Excel.Worksheet exc, Excel.Range r1, Excel.Range f1)
+        public static Dictionary<int, T> Getkeysm<T>(Excel.Worksheet Sheetcopy, Excel.Range rangecopy, Excel.Range firkeysm)
         {
             //Console.WriteLine("Getkeysm<T>");
             Dictionary<int, T> s = new Dictionary<int, T>();
             int n3;
             T n4;
-            for (int j = f1.Row + 2; j <= r1.Rows.Count; j++)
+            for (int j = firkeysm.Row + 2; j <= rangecopy.Rows.Count; j++)
             {
-                Excel.Range forY6 = exc.Cells[j, f1.Column] as Excel.Range;
+                Excel.Range forY6 = Sheetcopy.Cells[j, firkeysm.Column] as Excel.Range;
                
                 if (forY6 != null && forY6.Value2 != null && forY6.Value2.ToString() != "")
                 {
@@ -285,15 +225,20 @@ namespace ConsoleApp3
         } 
         //получение столбца где будет записан столбец примечание для записи в него из каких актов КС-2 взяты объемы
       
-        public static int GetColumzapis(Excel.Worksheet x, Excel.Range y, Excel.Range f)
+        public static int GetColumzapis(Excel.Worksheet Sheetcopy, Excel.Range rangecopy, Excel.Range firkeysm)
         {
             //Console.WriteLine(" GetColumzapis");
             int d = -1;
-            for (int j = f.Column; j <= y.Columns.Count; j++)
+            for (int j = firkeysm.Column; j <= rangecopy.Columns.Count; j++)
             {
-                Excel.Range forY2 = x.Cells[f.Row, j] as Excel.Range;
+                Excel.Range forY2 = Sheetcopy.Cells[firkeysm.Row, j];
                 if (forY2 != null && forY2.Value2 != null) continue;
-                else { x.Cells[f.Row, j] = "Примечание"; d = j; break; }
+                else 
+                {
+                    Sheetcopy.Cells[firkeysm.Row, j] = "Примечание";
+                    d = j;
+                    break; 
+                }
             }
             return d;  
         }
