@@ -8,9 +8,11 @@ namespace ConsoleApp3
     public class RegexReg
     {
         //регулярные выражения, используемые в сметах и актах КС-2
-        public Regex regexval = new Regex(@"(\bза отчетный|(К|к)оличество)", RegexOptions.IgnoreCase);
-        public Regex regexmes = new Regex(@"\.(?<month>\d{1,2})\.", RegexOptions.IgnoreCase);
-        public Regex regexgod = new Regex(@"\.(?<year>\d{2,4})", RegexOptions.IgnoreCase);
-        public Regex namesmet = new Regex(@"(С|с)мета\s*№\d+", RegexOptions.IgnoreCase);
+        public Regex scopeWorkinAktKS = new Regex(@"(\bза отчетный|(К|к)оличество)", RegexOptions.IgnoreCase);
+        public Regex regexmonth = new Regex(@"\.(?<month>\d{1,2})\.", RegexOptions.IgnoreCase);
+        public Regex regexyear = new Regex(@"\.(?<year>\d{2,4})", RegexOptions.IgnoreCase);
+        public Regex nameSsmeta = new Regex(@"((С|с)мета|\s*) №\s*\d+", RegexOptions.IgnoreCase);
+        public Regex cellItogoPorazdely = new Regex("Итого по разделу");
+        public Regex cellOfRazdel = new Regex(@"^Раздел");
     }
 }

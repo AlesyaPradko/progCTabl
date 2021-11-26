@@ -4,6 +4,7 @@ using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
@@ -11,123 +12,192 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ConsoleApp3
 {
-    public class Expert:Worker
+    public class Expert : Worker
     {
-        private Dictionary<int, double> summSmeta;
-        private Dictionary<int, string> periodSmeta;
-        public Expert():base()
+        private Dictionary<int, double> totalScopeWorkforSmeta;
+        private Dictionary<int, string> periodTimeWorkforSmeta;
+        private string[] nameAktKS;
+        private Mutex mutexObj = new Mutex();
+        public Expert() : base()
         { }
-        protected override void ProcessSmeta(int num, RangeFile obl)
+
+        protected override void ProcessSmeta(RangeFile oblastobrabotki)
         {
-            //Console.WriteLine("Worklikeexpert");
-             Excel.Worksheet Sheetcopy = copySmet[num].Sheets[1];
-             Excel.Range rangecopy = Sheetcopy.get_Range(obl.FirstCell, obl.LastCell);
-             Excel.Range firkeysm = rangecopy.Find("Номер");
-             Excel.Range firvalsm = rangecopy.Find("Количество");
-             int a = firvalsm.Column + 1;
-             Excel.Range forYs = Sheetcopy.Cells[firkeysm.Row, a];
-             forYs.Insert(XlInsertShiftDirection.xlShiftToRight);
-             summSmeta = ParserExc.Getkeysm<double>(Sheetcopy, rangecopy, firkeysm);
-             periodSmeta = ParserExc.Getkeysm<string>(Sheetcopy, rangecopy, firkeysm);
-             Sheetcopy.Cells[firkeysm.Row, a] = "Выполнение по смете";
-             int dprimst = ParserExc.GetColumzapis(Sheetcopy, rangecopy, firkeysm);
-             if (dprimst == -1) { throw new ZapredelException("Вы задали слишком малую область по ширине таблицы, задайте большую"); return; }
-             string[] sk = new string[containPapkaKS.Count];
-             string[] valstr = periodSmeta.Values.ToArray();
-             int numKS = 0;   
-             for (int v = 0; v < kskSmete[adresSmeta[num]].Count; v++)
-             {
-                for (int i = 0; i < containPapkaKS.Count; i++)
+            //Console.WriteLine("ProcessSmeta expert");
+            mutexObj.WaitOne();
+            Console.WriteLine(Task.CurrentId + " получил мютех");
+            int numSmeta = (int)Task.CurrentId - 1;
+            try
+            {
+                Excel.Worksheet SheetcopySmetaOne = containCopySmeta[numSmeta].Sheets[1];
+                Excel.Range rangeSmetaOne = SheetcopySmetaOne.get_Range(oblastobrabotki.FirstCell, oblastobrabotki.LastCell);
+                Excel.Range keyCellNomerpozSmeta = rangeSmetaOne.Find("№ пп");
+                Excel.Range keyCellVupolnSmeta = rangeSmetaOne.Find("Кол.");
+                int lastRowCellsafterDelete = 0;
+                ParserExc.DeleteColumnandRow(SheetcopySmetaOne, rangeSmetaOne, keyCellNomerpozSmeta, AdresSmeta[numSmeta], ref lastRowCellsafterDelete);
+                Excel.Range newLastCell = SheetcopySmetaOne.Cells[lastRowCellsafterDelete, rangeSmetaOne.Columns.Count];
+                rangeSmetaOne = SheetcopySmetaOne.get_Range(keyCellNomerpozSmeta, newLastCell);//уменьшение области обработки
+                int vstavkaColumntotalScopeWork = keyCellVupolnSmeta.Column + 1;
+                Excel.Range firstCellNewColumn = SheetcopySmetaOne.Cells[keyCellNomerpozSmeta.Row, vstavkaColumntotalScopeWork];
+                Excel.Range lastCellobrabotki = SheetcopySmetaOne.Range[oblastobrabotki.LastCell];
+                Excel.Range lastCellNewColumn = SheetcopySmetaOne.Cells[lastCellobrabotki.Row, vstavkaColumntotalScopeWork];
+                Excel.Range insertNewColumn = SheetcopySmetaOne.get_Range(firstCellNewColumn, lastCellNewColumn);
+                insertNewColumn.EntireColumn.Insert(XlInsertShiftDirection.xlShiftToRight);
+                totalScopeWorkforSmeta = ParserExc.GetkeySmetaForZapis<double>(SheetcopySmetaOne, rangeSmetaOne, AdresSmeta[numSmeta]);
+                periodTimeWorkforSmeta = ParserExc.GetkeySmetaForZapis<string>(SheetcopySmetaOne, rangeSmetaOne, AdresSmeta[numSmeta]);
+                string[] valperiodTimeWorkforSmeta = periodTimeWorkforSmeta.Values.ToArray();
+                Excel.Range topCellmergeCellContentVupoln = SheetcopySmetaOne.Cells[keyCellNomerpozSmeta.Row, vstavkaColumntotalScopeWork];
+                Excel.Range bottomCellmergeCellContentVupoln = SheetcopySmetaOne.Cells[keyCellNomerpozSmeta.Row + 2, vstavkaColumntotalScopeWork];
+                Excel.Range mergeCellContentVupoln = SheetcopySmetaOne.get_Range(topCellmergeCellContentVupoln, bottomCellmergeCellContentVupoln);
+                mergeCellContentVupoln.Merge();
+                mergeCellContentVupoln.Value = "Выполнение по смете";
+                SheetcopySmetaOne.Cells[keyCellNomerpozSmeta.Row + 3, vstavkaColumntotalScopeWork] = vstavkaColumntotalScopeWork - keyCellNomerpozSmeta.Column + 1;
+                int numLastColumnCellNote = ParserExc.GetColumforZapisNote(SheetcopySmetaOne, rangeSmetaOne);
+                Console.WriteLine("numLastColumnCellNote" + numLastColumnCellNote);
+                if (numLastColumnCellNote == -1)
                 {
-                    if (adresKS[i] != kskSmete[adresSmeta[num]][v]) continue;
-                    else
+                    throw new ZapredelException("Вы задали слишком малую область по ширине таблицы, задайте большую");
+                }
+                nameAktKS = new string[containPapkaKS.Count];
+                int curNumKS = 0;
+                for (int v = 0; v < aktAllKSforOneSmeta[adresSmeta[numSmeta]].Count; v++)
+                {
+                    for (int numKS = 0; numKS < containPapkaKS.Count; numKS++)
                     {
-                        Excel.Worksheet workSheet= containPapkaKS[i].Sheets[1];
-                        Excel.Range range = workSheet.get_Range(obl.FirstCell, obl.LastCell);
-                        WorKSE(workSheet, range,i, ref sk);
-                        ZapisinfileE(firkeysm, Sheetcopy, rangecopy, sk, a, dprimst,i, valstr);
-                        numKS = i;
-                        Marshal.FinalReleaseComObject(range);
-                        Marshal.FinalReleaseComObject(workSheet);
+                        if (adresAktKS[numKS] != aktAllKSforOneSmeta[adresSmeta[numSmeta]][v]) continue;
+                        else
+                        {
+                            Excel.Worksheet workSheetAktKS = containPapkaKS[numKS].Sheets[1];
+                            Excel.Range firstAktKS = workSheetAktKS.Cells[1, 1];
+                            Excel.Range lastAktKS = workSheetAktKS.Cells[rangeSmetaOne.Rows.Count + rangeSmetaOne.Row, rangeSmetaOne.Columns.Count + rangeSmetaOne.Column];
+                            Excel.Range rangeAktKS = workSheetAktKS.get_Range(firstAktKS, lastAktKS);
+                            WorkWithAktKSExpert(workSheetAktKS, rangeAktKS, numKS, adresAktKS[numKS], ref nameAktKS);
+                            ZapisinfileExpert(SheetcopySmetaOne, rangeSmetaOne, vstavkaColumntotalScopeWork, numLastColumnCellNote, valperiodTimeWorkforSmeta, numKS, numSmeta);
+                            curNumKS = numKS;
+                            Marshal.FinalReleaseComObject(rangeAktKS);
+                            Marshal.FinalReleaseComObject(workSheetAktKS);
+                        }
                     }
                 }
-             }
-             ZapisFormulaE(a, Sheetcopy, rangecopy, firvalsm);
-             FormatZapis(num, numKS, firkeysm, Sheetcopy, rangecopy);
-             Zakrutie(num, Sheetcopy, rangecopy);
+                ZapisFormulaExpert(SheetcopySmetaOne, rangeSmetaOne, keyCellVupolnSmeta, vstavkaColumntotalScopeWork);
+                FormatZapisinCopySmeta(SheetcopySmetaOne, rangeSmetaOne, numSmeta);
+                Excel.Range topLastColumnNote = SheetcopySmetaOne.Cells[rangeSmetaOne.Row, numLastColumnCellNote + 1];
+                Excel.Range bottomLastColumnNote = SheetcopySmetaOne.Cells[rangeSmetaOne.Rows.Count, numLastColumnCellNote + 1];
+                Excel.Range rangeLastColumnNote = SheetcopySmetaOne.get_Range(topLastColumnNote, bottomLastColumnNote);
+                rangeLastColumnNote.ColumnWidth = 50;
+                Zakrutie(SheetcopySmetaOne, rangeSmetaOne, numSmeta);
+            }
+            catch (ZapredelException exc)
+            {
+                Console.WriteLine(exc.parName);
+            }
+            catch (NullReferenceException ex)
+            {
+                Console.WriteLine($"{ex.Message} Проверьте чтобы в {AdresSmeta[numSmeta]} было верно записано устойчивое выражение [№ пп] или [Кол.]");
+            }
+            Console.WriteLine(Task.CurrentId + "освобождает");
+            mutexObj.ReleaseMutex();
         }
 
-        //вставка столбца "Осaток" с формулой разности
-        private void ZapisFormulaE(int a, Excel.Worksheet Sheetcopy, Excel.Range rangecopy, Excel.Range firvalsm)
+        //метод записывает в последний столбец "Остаток" формулу разности - остатка работ для эксперта
+        private void ZapisFormulaExpert(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, Excel.Range keyCellVupolnSmeta, int vstavkaColumntotalScopeWork)
         {
-            Excel.Range Ost = Sheetcopy.Cells[firvalsm.Row, a + 1] as Excel.Range;
-            Ost.Insert(XlInsertShiftDirection.xlShiftToRight);
-            Sheetcopy.Cells[firvalsm.Row, a + 1] = "Остаток";
-            for (int j = firvalsm.Row + 1; j <= rangecopy.Rows.Count; j++)
+            //Console.WriteLine("ZapisFormulaExpert");
+            Excel.Range topInsertColumn = SheetcopySmetaOne.Cells[keyCellVupolnSmeta.Row, vstavkaColumntotalScopeWork + 1];
+            Excel.Range bottomInsertColumn = SheetcopySmetaOne.Cells[rangeSmetaOne.Rows.Count, vstavkaColumntotalScopeWork + 1];
+            Excel.Range ostatokInsertColumn = SheetcopySmetaOne.get_Range(topInsertColumn, bottomInsertColumn);
+            ostatokInsertColumn.EntireColumn.Insert(XlInsertShiftDirection.xlShiftToRight);
+            Excel.Range topCellmergeCellContentOstatok = SheetcopySmetaOne.Cells[keyCellVupolnSmeta.Row, vstavkaColumntotalScopeWork + 1];
+            Excel.Range bottomCellmergeCellContentOstatok = SheetcopySmetaOne.Cells[keyCellVupolnSmeta.Row + 2, vstavkaColumntotalScopeWork + 1];
+            Excel.Range mergeCellContentOstatok = SheetcopySmetaOne.get_Range(topCellmergeCellContentOstatok, bottomCellmergeCellContentOstatok);
+            mergeCellContentOstatok.Merge();
+            mergeCellContentOstatok.Value = "Остаток";
+            SheetcopySmetaOne.Cells[rangeSmetaOne.Row + 3, vstavkaColumntotalScopeWork + 1] = vstavkaColumntotalScopeWork - rangeSmetaOne.Column + 2;
+            for (int j = rangeSmetaOne.Row + 4; j < rangeSmetaOne.Rows.Count + rangeSmetaOne.Row; j++)
             {
-                Excel.Range vst = Sheetcopy.Cells[j, a + 1] as Excel.Range;
-                vst.Insert(XlInsertShiftDirection.xlShiftToRight);
-                if (j > firvalsm.Row + 1)
+                Excel.Range cellsVupolnSmetaColumnTabl = SheetcopySmetaOne.Cells[j, keyCellVupolnSmeta.Column];
+                if (cellsVupolnSmetaColumnTabl != null && cellsVupolnSmetaColumnTabl.Value2 != null && cellsVupolnSmetaColumnTabl.Value2.ToString() != "" && !cellsVupolnSmetaColumnTabl.MergeCells)
                 {
-                    Excel.Range act = Sheetcopy.Cells[j, firvalsm.Column] as Excel.Range;
-                    if (act != null && act.Value2 != null && act.Value2.ToString() != "" && !act.MergeCells)
-                    {
-                        Excel.Range activ = Sheetcopy.Cells[j, a + 1] as Excel.Range;
-                        activ.FormulaR1C1 = "=RC[-2]-RC[-1]";
-                    }
+                    Excel.Range ostatocFormula = SheetcopySmetaOne.Cells[j, vstavkaColumntotalScopeWork + 1];
+                    ostatocFormula.FormulaR1C1 = "=RC[-2]-RC[-1]";
                 }
             }
         }
 
-        private void WorKSE(Excel.Worksheet workSheet, Excel.Range range,int i,ref string[]sk)
+        //метод меняет по ссылке массив строк - наименование Актов КС-2 за определенный период и заполняет словарь
+        //где ключ -номер позиции по смете из Актов КС, значение выполнение по смете
+        private void WorkWithAktKSExpert(Excel.Worksheet workSheetAktKS, Excel.Range rangeAktKS, int numKS, string adresKs, ref string[] nameAktKS)
         {
-            sk[i] = "Акт КС-2 №";
-            RegexReg regul = new RegexReg();
-            Excel.Range firstkey = range.Find("по смете");
-            Excel.Range otregexval = ParserExc.GetCell(workSheet, range, regul.regexval);
-            Excel.Range findnum = range.Find("Номер документа");
-            findnum = FindCellforNameKS(findnum, workSheet);
-            Excel.Range finddata = range.Find("Дата составления") as Excel.Range;
-            finddata = FindCellforNameKS(finddata, workSheet);
-            sk[i] += findnum.Value.ToString();
-            string sgod = ParserExc.Finddate(regul.regexgod, finddata);
-            string smes = ParserExc.Finddate(regul.regexmes, finddata);
-            string havemes = ParserExc.Mespropis(smes);
-            havemes += sgod;
-            sk[i] += $" {havemes}\n";
-            getVupoln = ParserExc.Getvupoln(workSheet, range, firstkey, otregexval);
+            //Console.WriteLine(" WorkWithAktKSExpert");
+            try
+            {
+                nameAktKS[numKS] = "Акт КС-2 №";
+                RegexReg regul = new RegexReg();
+                Excel.Range keyNumPozpoSmeteinAktKS = rangeAktKS.Find("по смете");
+                Excel.Range keyscopeWorkinAktKS = ParserExc.FindCellofRegul(workSheetAktKS, rangeAktKS, regul.scopeWorkinAktKS);
+                if (keyNumPozpoSmeteinAktKS != null && keyscopeWorkinAktKS != null)
+                {
+                    Excel.Range findCellNumAktKS = rangeAktKS.Find("Номер документа");
+                    findCellNumAktKS = FindCellforNameKS(workSheetAktKS, findCellNumAktKS);
+                    Excel.Range findCellDatAktKS = rangeAktKS.Find("Дата составления");
+                    findCellDatAktKS = FindCellforNameKS(workSheetAktKS, findCellDatAktKS);
+                    string yearAktKS = ParserExc.FinddateAktKS(regul.regexyear, findCellDatAktKS);
+                    string monthAktKS = ParserExc.FinddateAktKS(regul.regexmonth, findCellDatAktKS);
+                    string monthAktKSpropis = ParserExc.Monthpropis(monthAktKS);
+                    nameAktKS[numKS] += $"{findCellNumAktKS.Value.ToString()} {monthAktKSpropis}{yearAktKS}\n";
+                    totalScopeWorkAktKSone = ParserExc.GetScopeWorkAktKSone(workSheetAktKS, rangeAktKS, keyNumPozpoSmeteinAktKS, keyscopeWorkinAktKS, nameAktKS[numKS]);
+                }
+                else
+                {
+                    Console.WriteLine($"Проверьте чтобы в {adresKs} было верно записано устойчивое выражение [по смете] или [за отчетный|(К|к)оличество]");
+                }
+            }
+            catch (NullReferenceException ex)
+            {
+                Console.WriteLine($"{ex.Message} Проверьте чтобы в {adresKs} было верно записано устойчивое выражение Номер документа или Дата составления");
+            }
         }
 
-        private void ZapisinfileE(Excel.Range firkeysm, Excel.Worksheet Sheetcopy, Excel.Range rangecopy, string[] sk, int a, int dprimst,int i, string[] valstr)
+        //метод записывает в файл копии сметы объемы из Актов КС-2, все объемы работ по каждой позиции
+        //суммируются в одном столбце, вставка столбца идет за столбцом объемы по смете  
+        private void ZapisinfileExpert(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, int vstavkaColumntotalScopeWork, int numLastColumnCellNote, string[] valperiodTimeWorkforSmeta, int numKS, int numSmeta)
         {
-            int[] keysm = summSmeta.Keys.ToArray();
-            double[] valsm = summSmeta.Values.ToArray();
-            ICollection keyColl = getVupoln.Keys;
-            bool eqva;
-            int ob1;
-            for (int j = firkeysm.Row + 2; j <= rangecopy.Rows.Count; j++)
+            //Console.WriteLine(" ZapisinfileExpert");
+            int[] keytotalScopeWorkforSmeta = totalScopeWorkforSmeta.Keys.ToArray();
+            double[] valtotalScopeWorkforSmeta = totalScopeWorkforSmeta.Values.ToArray();
+            ICollection keyCollScopeWorkAktKSone = totalScopeWorkAktKSone.Keys;
+            bool indexWasFound;
+            int pozSmeta;
+            for (int j = rangeSmetaOne.Row + 4; j < rangeSmetaOne.Rows.Count + rangeSmetaOne.Row; j++)
             {
-                eqva = false;
-                int ind = 0;
-                Excel.Range forY4 = Sheetcopy.Cells[j, firkeysm.Column] as Excel.Range;
-                if (forY4 != null && forY4.Value2 != null && forY4.Value2.ToString() != "" && !forY4.MergeCells)
+                indexWasFound = false;
+                int indexSmeta = 0;
+                Excel.Range cellsNumPozColumnTabl = SheetcopySmetaOne.Cells[j, rangeSmetaOne.Column];
+                if (cellsNumPozColumnTabl != null && cellsNumPozColumnTabl.Value2 != null && cellsNumPozColumnTabl.Value2.ToString() != "" && !cellsNumPozColumnTabl.MergeCells)
                 {
-                    ob1 = Convert.ToInt32(forY4.Value2);
-                    foreach (int ob in keyColl)
+                    try
                     {
-                        if (ob1 == ob)
+                        pozSmeta = Convert.ToInt32(cellsNumPozColumnTabl.Value2);
+                        foreach (int pozSmetaAktKS in keyCollScopeWorkAktKSone)
                         {
-                            eqva = true;
-                            ind = Array.IndexOf(keysm, ob);
-                            valsm[ind] += getVupoln[ob];
-                            summSmeta[ob] = valsm[ind];
-                            Sheetcopy.Cells[j, a] = summSmeta[ob];
+                            if (pozSmeta == pozSmetaAktKS)
+                            {
+                                indexWasFound = true;
+                                indexSmeta = Array.IndexOf(keytotalScopeWorkforSmeta, pozSmetaAktKS);
+                                valtotalScopeWorkforSmeta[indexSmeta] += totalScopeWorkAktKSone[pozSmetaAktKS];
+                                totalScopeWorkforSmeta[pozSmetaAktKS] = valtotalScopeWorkforSmeta[indexSmeta];
+                                SheetcopySmetaOne.Cells[j, vstavkaColumntotalScopeWork] = totalScopeWorkforSmeta[pozSmetaAktKS];
+                            }
+                        }
+                        if (indexWasFound)
+                        {
+                            valperiodTimeWorkforSmeta[indexSmeta] += $"{nameAktKS[numKS]} ";
+                            SheetcopySmetaOne.Cells[j, numLastColumnCellNote] = valperiodTimeWorkforSmeta[indexSmeta];
                         }
                     }
-                    if (eqva)
+                    catch (FormatException ex)
                     {
-                        valstr[ind] += $"{sk[i]} ";
-                        Sheetcopy.Cells[j, dprimst] = valstr[ind];
+                        Console.WriteLine($"{ex.Message} Вы ввели неверный формат для {AdresSmeta[numSmeta]} в строке {cellsNumPozColumnTabl.Row} в столбце {cellsNumPozColumnTabl.Column}(не должно быть [.,букв], только целые числа ");
                     }
                 }
             }
