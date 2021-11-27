@@ -17,16 +17,14 @@ namespace ConsoleApp3
         private Dictionary<int, double> totalScopeWorkforSmeta;
         private Dictionary<int, string> periodTimeWorkforSmeta;
         private string[] nameAktKS;
-        private Mutex mutexObj = new Mutex();
         public Expert() : base()
         { }
 
         protected override void ProcessSmeta(RangeFile oblastobrabotki)
         {
             //Console.WriteLine("ProcessSmeta expert");
-            mutexObj.WaitOne();
             Console.WriteLine(Task.CurrentId + " получил мютех");
-            int numSmeta = (int)Task.CurrentId - 1;
+            int numSmeta = (int)Task.CurrentId - 1; //Зачем Вы ийдишник потока используете дальше как индекс в адресе сметы? Вернуть старые индексы, если они были.
             try
             {
                 Excel.Worksheet SheetcopySmetaOne = containCopySmeta[numSmeta].Sheets[1];
@@ -34,24 +32,28 @@ namespace ConsoleApp3
                 Excel.Range keyCellNomerpozSmeta = rangeSmetaOne.Find("№ пп");
                 Excel.Range keyCellVupolnSmeta = rangeSmetaOne.Find("Кол.");
                 int lastRowCellsafterDelete = 0;
-                ParserExc.DeleteColumnandRow(SheetcopySmetaOne, rangeSmetaOne, keyCellNomerpozSmeta, AdresSmeta[numSmeta], ref lastRowCellsafterDelete);
+                ParserExc.DeleteColumnAndRow(SheetcopySmetaOne, rangeSmetaOne, keyCellNomerpozSmeta, AdresSmeta[numSmeta], ref lastRowCellsafterDelete);
                 Excel.Range newLastCell = SheetcopySmetaOne.Cells[lastRowCellsafterDelete, rangeSmetaOne.Columns.Count];
                 rangeSmetaOne = SheetcopySmetaOne.get_Range(keyCellNomerpozSmeta, newLastCell);//уменьшение области обработки
                 int vstavkaColumntotalScopeWork = keyCellVupolnSmeta.Column + 1;
+
                 Excel.Range firstCellNewColumn = SheetcopySmetaOne.Cells[keyCellNomerpozSmeta.Row, vstavkaColumntotalScopeWork];
                 Excel.Range lastCellobrabotki = SheetcopySmetaOne.Range[oblastobrabotki.LastCell];
                 Excel.Range lastCellNewColumn = SheetcopySmetaOne.Cells[lastCellobrabotki.Row, vstavkaColumntotalScopeWork];
                 Excel.Range insertNewColumn = SheetcopySmetaOne.get_Range(firstCellNewColumn, lastCellNewColumn);
+
                 insertNewColumn.EntireColumn.Insert(XlInsertShiftDirection.xlShiftToRight);
-                totalScopeWorkforSmeta = ParserExc.GetkeySmetaForZapis<double>(SheetcopySmetaOne, rangeSmetaOne, AdresSmeta[numSmeta]);
-                periodTimeWorkforSmeta = ParserExc.GetkeySmetaForZapis<string>(SheetcopySmetaOne, rangeSmetaOne, AdresSmeta[numSmeta]);
+                //totalScopeWorkforSmeta = ParserExc.GetkeySmetaForZapis<double>(SheetcopySmetaOne, rangeSmetaOne, AdresSmeta[numSmeta]); //зачем это вызывалось, если нигде не используется???
+                //periodTimeWorkforSmeta = ParserExc.GetkeySmetaForZapis<string>(SheetcopySmetaOne, rangeSmetaOne, AdresSmeta[numSmeta]);
                 string[] valperiodTimeWorkforSmeta = periodTimeWorkforSmeta.Values.ToArray();
+
                 Excel.Range topCellmergeCellContentVupoln = SheetcopySmetaOne.Cells[keyCellNomerpozSmeta.Row, vstavkaColumntotalScopeWork];
                 Excel.Range bottomCellmergeCellContentVupoln = SheetcopySmetaOne.Cells[keyCellNomerpozSmeta.Row + 2, vstavkaColumntotalScopeWork];
                 Excel.Range mergeCellContentVupoln = SheetcopySmetaOne.get_Range(topCellmergeCellContentVupoln, bottomCellmergeCellContentVupoln);
                 mergeCellContentVupoln.Merge();
                 mergeCellContentVupoln.Value = "Выполнение по смете";
                 SheetcopySmetaOne.Cells[keyCellNomerpozSmeta.Row + 3, vstavkaColumntotalScopeWork] = vstavkaColumntotalScopeWork - keyCellNomerpozSmeta.Column + 1;
+
                 int numLastColumnCellNote = ParserExc.GetColumforZapisNote(SheetcopySmetaOne, rangeSmetaOne);
                 Console.WriteLine("numLastColumnCellNote" + numLastColumnCellNote);
                 if (numLastColumnCellNote == -1)
@@ -64,19 +66,21 @@ namespace ConsoleApp3
                 {
                     for (int numKS = 0; numKS < containPapkaKS.Count; numKS++)
                     {
-                        if (adresAktKS[numKS] != aktAllKSforOneSmeta[adresSmeta[numSmeta]][v]) continue;
-                        else
-                        {
-                            Excel.Worksheet workSheetAktKS = containPapkaKS[numKS].Sheets[1];
-                            Excel.Range firstAktKS = workSheetAktKS.Cells[1, 1];
-                            Excel.Range lastAktKS = workSheetAktKS.Cells[rangeSmetaOne.Rows.Count + rangeSmetaOne.Row, rangeSmetaOne.Columns.Count + rangeSmetaOne.Column];
-                            Excel.Range rangeAktKS = workSheetAktKS.get_Range(firstAktKS, lastAktKS);
-                            WorkWithAktKSExpert(workSheetAktKS, rangeAktKS, numKS, adresAktKS[numKS], ref nameAktKS);
-                            ZapisinfileExpert(SheetcopySmetaOne, rangeSmetaOne, vstavkaColumntotalScopeWork, numLastColumnCellNote, valperiodTimeWorkforSmeta, numKS, numSmeta);
-                            curNumKS = numKS;
-                            Marshal.FinalReleaseComObject(rangeAktKS);
-                            Marshal.FinalReleaseComObject(workSheetAktKS);
+                        if (adresAktKS[numKS] != aktAllKSforOneSmeta[adresSmeta[numSmeta]][v]) 
+                        { 
+                            continue; 
                         }
+
+                        Excel.Worksheet workSheetAktKS = containPapkaKS[numKS].Sheets[1];
+                        Excel.Range firstAktKS = workSheetAktKS.Cells[1, 1];
+                        Excel.Range lastAktKS = workSheetAktKS.Cells[rangeSmetaOne.Rows.Count + rangeSmetaOne.Row, rangeSmetaOne.Columns.Count + rangeSmetaOne.Column];
+                        Excel.Range rangeAktKS = workSheetAktKS.get_Range(firstAktKS, lastAktKS);
+                        WorkWithAktKSExpert(workSheetAktKS, rangeAktKS, numKS, adresAktKS[numKS], ref nameAktKS);
+                        ZapisinfileExpert(SheetcopySmetaOne, rangeSmetaOne, vstavkaColumntotalScopeWork, numLastColumnCellNote, valperiodTimeWorkforSmeta, numKS, numSmeta);
+                        curNumKS = numKS;
+                        Marshal.FinalReleaseComObject(rangeAktKS);
+                        Marshal.FinalReleaseComObject(workSheetAktKS);
+
                     }
                 }
                 ZapisFormulaExpert(SheetcopySmetaOne, rangeSmetaOne, keyCellVupolnSmeta, vstavkaColumntotalScopeWork);
@@ -96,7 +100,6 @@ namespace ConsoleApp3
                 Console.WriteLine($"{ex.Message} Проверьте чтобы в {AdresSmeta[numSmeta]} было верно записано устойчивое выражение [№ пп] или [Кол.]");
             }
             Console.WriteLine(Task.CurrentId + "освобождает");
-            mutexObj.ReleaseMutex();
         }
 
         //метод записывает в последний столбец "Остаток" формулу разности - остатка работ для эксперта

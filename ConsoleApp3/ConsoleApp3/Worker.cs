@@ -15,9 +15,12 @@ namespace ConsoleApp3
         protected List<string> adresSmeta;
         protected List<string> adresAktKS;
         protected List<Excel.Workbook> containPapkaKS;
-        private List<Excel.Workbook> containPapkaSmeta;
         protected List<Excel.Workbook> containCopySmeta;
         protected Dictionary<string, List<string>> aktAllKSforOneSmeta;
+
+        private List<Excel.Workbook> _containPapkaSmeta;
+        private Mutex _mutex = new Mutex();
+
         public Task[] taskobrabotka;
 
         public Worker()
@@ -26,23 +29,23 @@ namespace ConsoleApp3
 
         public List<Excel.Workbook> ContainPapkaSmeta
         {
-            get { return containPapkaSmeta; }
-            private set { }
+            get { return _containPapkaSmeta; }
+            private set { _containPapkaSmeta = value; } //!!! здесь дописал set
         }
         public List<string> AdresSmeta
         {
             get { return adresSmeta; }
-            private set { }
+            private set { adresSmeta = value; }//!!! здесь дописал set
         }
         public List<string> AdresAktKS
         {
             get { return adresAktKS; }
-            private set { }
+            private set { adresAktKS = value; }//!!! здесь дописал set
         }
         public List<Excel.Workbook> ContainPapkaKS
         {
             get { return containPapkaKS; }
-            private set { }
+            private set { containPapkaKS = value; }//!!! здесь дописал set
         }
         //public List<Excel.Workbook> CopySmet { get; set; }
 
@@ -56,9 +59,9 @@ namespace ConsoleApp3
             try
             {
                 string usersmeta = @"D:\иксу";
-                containPapkaSmeta = ParserExc.GetBookAllAktKSandSmeta(usersmeta, excelApp);
+                _containPapkaSmeta = ParserExc.GetBookAllAktKSandSmeta(usersmeta, excelApp);
                 adresSmeta = ParserExc.GetstringAdresa(usersmeta);
-                if (containPapkaSmeta.Count == 0 || adresSmeta.Count == 0)
+                if (_containPapkaSmeta.Count == 0 || adresSmeta.Count == 0)
                 {
                     throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
                 }
@@ -86,7 +89,7 @@ namespace ConsoleApp3
         {
             //Console.WriteLine("MadeCopyExcbook");
             List<Excel.Workbook> containCopySmeta = new List<Excel.Workbook>();
-            for (int u = 0; u < containPapkaSmeta.Count; u++)
+            for (int u = 0; u < _containPapkaSmeta.Count; u++)
             {
                 string testuserwheresave = userwheresave;
                 testuserwheresave += $"{ adresSmeta[u].Remove(0, usersmeta.Length + 1)}";//оставляет имя сметы(без пути)
@@ -99,18 +102,28 @@ namespace ConsoleApp3
         //метод для работы над папкой со сметами в разных режимах
         public void ProccessAll(RangeFile oblastobrabotki)
         {
-            //Mutex[] mutexObj = new Mutex[containCopySmeta.Count];
             taskobrabotka = new Task[containCopySmeta.Count];
             for (int num = 0; num < containCopySmeta.Count; num++)
             {
-                // mutexObj[num] = new Mutex();
+
                 taskobrabotka[num] = Task.Factory.StartNew(() =>
                 {
-                    //mutexObj[(int)Task.CurrentId - 1].WaitOne();
-                    Console.WriteLine(Task.CurrentId + "начал  работу");
+                    _mutex.WaitOne();
                     ProcessSmeta(oblastobrabotki);
-                    Console.WriteLine(Task.CurrentId + "завершил  работу");
-                    //mutexObj[(int)Task.CurrentId - 1].ReleaseMutex();
+                    _mutex.ReleaseMutex();
+                    //ProcessSmeta(oblastobrabotki);
+                    // Долго соображал почему здесь вызывается один метод с одним аргументом. Как я понял в самом методе используется индекс таски и от него уже выбираются определенные данные
+                    // Нужно в ProcessSmeta передавть объект,содержищий только одну смету, а не весь файл, а потом уже внутри из него что-то выбирать с учетом индексов.
+                    //Нужен некоторый метод, который будет выбирать из целого файла данные для одной сметы, например, GetEstimateRawData(oblastobrabotki,num) //ПолучитьСырыеДанныеСметы
+                    //тогда код может быть
+                    //_mutex.WaitOne();
+                    //RangeFile estimateData = GetEstimateRawData(oblastobrabotki, num);
+                    //_mutex.ReleaseMutex();
+                    //ProcessSmeta(estimateData); //Эту штуку можно будет запускать без мьютекса т.к. она назевисима. Если у Вас вся обработка будет завернута в мьютекс, смысла в потоках
+                    //не будет т.к. все равно все будет последовательно.
+                    //Мьютекс остается один и только здесь. Поудалял работу с массивом мьютексов, если еще где-то осталось - все удалем
+                    //Если подготовить данные не получится таким образом, то смысла в параллельности опять же не будет, т.к. исходник на всех один и все будет под мьютексом параллельно
+
 
                 });
             }

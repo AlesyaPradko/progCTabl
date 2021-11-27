@@ -215,6 +215,7 @@ namespace ConsoleApp3
 
         //метод возвращает словарь где в ключ записан номер позиции по смете из сметы, а значение - нулл,
         //при записи в режиме эксперт в него будут суммироваться значения из Актов КС-2 в общей графе в смете
+        // Зачем делать словарь и в значение класть нулы? Если нужен список номеров можно использовать обычный лист.
         public static Dictionary<int, T> GetkeySmetaForZapis<T>(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, string AdresSmeta)
         {
             //Console.WriteLine("GetkeySmetaForZapis<T>");
@@ -269,7 +270,7 @@ namespace ConsoleApp3
             return numLastColumnCellNote;
         }
         //метод удаляет ненужные столбцы и строки для формирования ведомости выполненных объемов работ
-        public static void DeleteColumnandRow(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, Excel.Range keyCellNomerpozSmeta, string AdresSm, ref int lastRowCellsafterDelete)
+        public static void DeleteColumnAndRow(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, Excel.Range keyCellNomerpozSmeta, string AdresSm, ref int lastRowCellsafterDelete)
         {
             //Console.WriteLine(" DeleteColumnandRow");
             try

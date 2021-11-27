@@ -33,7 +33,7 @@ namespace ConsoleApp3
                 Excel.Range keyCellVupolnSmeta = rangeSmetaOne.Find("Кол.");
                 int nextInsertColumn = keyCellVupolnSmeta.Column + 1;
                 int lastRowCellsafterDelete = 0;
-                ParserExc.DeleteColumnandRow(SheetcopySmetaOne, rangeSmetaOne, keyCellNomerpozSmeta, AdresSmeta[numSmeta], ref lastRowCellsafterDelete);
+                ParserExc.DeleteColumnAndRow(SheetcopySmetaOne, rangeSmetaOne, keyCellNomerpozSmeta, AdresSmeta[numSmeta], ref lastRowCellsafterDelete);
                 Console.WriteLine(lastRowCellsafterDelete);
                 Excel.Range newLastCell = SheetcopySmetaOne.Cells[lastRowCellsafterDelete, rangeSmetaOne.Columns.Count];
                 rangeSmetaOne = SheetcopySmetaOne.get_Range(keyCellNomerpozSmeta, newLastCell);//уменьшение области обработки 
