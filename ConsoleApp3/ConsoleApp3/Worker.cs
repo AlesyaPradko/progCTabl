@@ -11,7 +11,7 @@ namespace ConsoleApp3
 {
     public abstract class Worker 
     {
-        //protected Dictionary<int, double> totalScopeWorkAktKSone;
+       
         protected List<string> _adresSmeta;
         protected List<string> _adresAktKS;
         protected string _userSmeta;
