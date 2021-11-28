@@ -19,6 +19,7 @@ namespace ConsoleApp3
         {
             //Console.WriteLine("CopyExcelSmetaOne");
             Excel.Workbook excelBooksm = excelApp.Workbooks.Open(adresoneSmeta);
+            Console.WriteLine("adresoneSmeta " + adresoneSmeta);
             if (!File.Exists(testuserwheresave))
             {
                 excelBooksm.SaveCopyAs(testuserwheresave);
@@ -58,6 +59,7 @@ namespace ConsoleApp3
                 {
                     Excel.Workbook bookAktKSone = excelApp.Workbooks.Open(onenameKS);
                     containPapkaKS.Add(bookAktKSone);
+                    Console.WriteLine(bookAktKSone.FullName);
                 }
             }
             return containPapkaKS;
@@ -215,7 +217,7 @@ namespace ConsoleApp3
 
         //метод возвращает словарь где в ключ записан номер позиции по смете из сметы, а значение - нулл,
         //при записи в режиме эксперт в него будут суммироваться значения из Актов КС-2 в общей графе в смете
-        public static Dictionary<int, T> GetkeySmetaForZapis<T>(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, string AdresSmeta)
+        public static Dictionary<int, T> GetkeySmetaForRecord<T>(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, string AdresSmeta)
         {
             //Console.WriteLine("GetkeySmetaForZapis<T>");
             Dictionary<int, T> resultwithNumPoz = new Dictionary<int, T>();

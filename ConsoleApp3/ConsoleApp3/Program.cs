@@ -43,40 +43,39 @@ namespace ConsoleApp3
             Excel.Application excelApp = Proverka.Instance;
             try
             {
-                Timer timer = new Timer();
-                string adressforLogFile = @"log11.txt";
-                FileStream logFile = new FileStream(adressforLogFile, FileMode.Append);
-                StreamWriter logFileError = new StreamWriter(logFile);
+                //string adressforLogFile = @"log11.txt";
+                //FileStream logFile = new FileStream(adressforLogFile, FileMode.Append);
+                //StreamWriter logFileError = new StreamWriter(logFile);
                 Stopwatch stopWatch = Stopwatch.StartNew();
                 //планируется по кнопке на выбор для каждого режима
                 Console.WriteLine("Выберите режим эксперт(нажмите 1) или техназор(нажмите 2) или график(3)");
                 var selector = (ChangeMod)Console.ReadKey().Key;
-                Console.SetOut(logFileError);
+                //Console.SetOut(logFileError);
                 Console.WriteLine("The application started at {0:HH:mm:ss.fff}", DateTime.Now);
-                RangeFile oblastobrabotki = new RangeFile();
-                oblastobrabotki.FirstCell = "A1";
-                oblastobrabotki.LastCell = "Z1200";
+                RangeFile processingArea = new RangeFile();
+                processingArea.FirstCell = "A1";
+                processingArea.LastCell = "Z1200";
                 switch (selector)
                 {
                     case ChangeMod.expert:
                         {
                             Expert ob = new Expert();
-                            ob.Initialization(excelApp);
-                            ob.ProccessAll(oblastobrabotki);
+                            ob.Initialization();
+                            ob.ProccessAll(processingArea, excelApp);
                             break;
                         }
                     case ChangeMod.tehnadzor:
                         {
                             Tehnadzor ob = new Tehnadzor();
-                            ob.Initialization(excelApp);
-                            ob.ProccessAll(oblastobrabotki);
+                            ob.Initialization();
+                            ob.ProccessAll(processingArea, excelApp);
                             break;
                         }
                     case ChangeMod.grafic:
                         {
                             Grafik ob = new Grafik();
                             ob.InitializationGrafik(excelApp);
-                            ob.ProccessGrafik(oblastobrabotki, excelApp);
+                            ob.ProccessGrafik(processingArea, excelApp);
                             break;
                         }
                     default:
@@ -87,7 +86,7 @@ namespace ConsoleApp3
                 long elapsed = stopWatch.ElapsedMilliseconds; // or sw.ElapsedTicks
                 Console.WriteLine("Total query time: {0} ms", elapsed);
                 excelApp.Quit();
-                logFileError.Close();
+                //logFileError.Close();
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 GC.Collect();

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -14,60 +10,55 @@ namespace ConsoleApp3
 
     public class Tehnadzor : Worker
     {
-        private Mutex mutexObj = new Mutex();
-        private List<Excel.Workbook> aktKSpoPoradkySort;
         public Tehnadzor() : base()
         { }
-        public Task[] taskobrabot;
-        protected override void ProcessSmeta(RangeFile oblastobrabotki)
+        protected override void ProcessSmeta(List<Excel.Workbook> listAktKStoOneSmeta, Excel.Worksheet sheetCopySmeta, RangeFile processingArea, string adresSmeta)
         {
             //Console.WriteLine("ProcessSmeta tehnadzor");
-            mutexObj.WaitOne();
-            Console.WriteLine(Task.CurrentId + " получил мютех");
-            int numSmeta = (int)Task.CurrentId - 1;
             try
-            {
-                Excel.Worksheet SheetcopySmetaOne = containCopySmeta[numSmeta].Sheets[1];
-                Excel.Range rangeSmetaOne = SheetcopySmetaOne.get_Range(oblastobrabotki.FirstCell, oblastobrabotki.LastCell);
-                Excel.Range keyCellNomerpozSmeta = rangeSmetaOne.Find("№ пп");
-                Excel.Range keyCellVupolnSmeta = rangeSmetaOne.Find("Кол.");
-                int nextInsertColumn = keyCellVupolnSmeta.Column + 1;
-                int lastRowCellsafterDelete = 0;
-                ParserExc.DeleteColumnandRow(SheetcopySmetaOne, rangeSmetaOne, keyCellNomerpozSmeta, AdresSmeta[numSmeta], ref lastRowCellsafterDelete);
-                Console.WriteLine(lastRowCellsafterDelete);
-                Excel.Range newLastCell = SheetcopySmetaOne.Cells[lastRowCellsafterDelete, rangeSmetaOne.Columns.Count];
-                rangeSmetaOne = SheetcopySmetaOne.get_Range(keyCellNomerpozSmeta, newLastCell);//уменьшение области обработки 
-                aktKSpoPoradkySort = SortAktKSforTehnadzor(numSmeta);
-                for (int numKS = 0; numKS < aktKSpoPoradkySort.Count; numKS++)
+            {     
+                Excel.Range rangeSmetaOne = sheetCopySmeta.get_Range(processingArea.FirstCell, processingArea.LastCell);
+                Excel.Range keyCellNumberPozSmeta = rangeSmetaOne.Find("№ пп");
+                Excel.Range keyCellConstructionWorkSmeta = rangeSmetaOne.Find("Кол.");
+                int nextInsertColumn = keyCellConstructionWorkSmeta.Column + 1;
+                int lastRowCellsAfterDelete = 0;
+                ParserExc.DeleteColumnandRow(sheetCopySmeta, rangeSmetaOne, keyCellNumberPozSmeta, adresSmeta, ref lastRowCellsAfterDelete);
+                Console.WriteLine(lastRowCellsAfterDelete);
+                Excel.Range newLastCell = sheetCopySmeta.Cells[lastRowCellsAfterDelete, rangeSmetaOne.Columns.Count];
+                rangeSmetaOne = sheetCopySmeta.get_Range(keyCellNumberPozSmeta, newLastCell);//уменьшение области обработки 
+                List<Excel.Workbook> aktKSinOrderSort = SortAktKSforTehnadzor(listAktKStoOneSmeta);
+                List<Dictionary<int, double>> forRecordWorkColumninSmeta = new List<Dictionary<int, double>>();
+                string[] nameAktKSRecordColumn = new string[aktKSinOrderSort.Count];
+                for (int numKS = 0; numKS < aktKSinOrderSort.Count; numKS++)
                 {
-                    Console.WriteLine(aktKSpoPoradkySort[numKS].FullName);
-                    Excel.Worksheet workSheetAktKS = aktKSpoPoradkySort[numKS].Sheets[1];
-                    Excel.Range rangeAktKS = workSheetAktKS.get_Range(oblastobrabotki.FirstCell, oblastobrabotki.LastCell);
-                    string nameAktKS = WorkWithAktKSTehnadzor(workSheetAktKS, rangeAktKS, adresAktKS[numKS]);
-                    ZapisinfileTehnadzor(SheetcopySmetaOne, rangeSmetaOne, nameAktKS, nextInsertColumn, numSmeta);
-                    FormatZapisinCopySmeta(SheetcopySmetaOne, rangeSmetaOne, numSmeta);
+                    Dictionary<int, double> totalScopeWorkAktKSone=new Dictionary<int, double> ();
+                    Console.WriteLine(aktKSinOrderSort[numKS].FullName);
+                    Excel.Worksheet workSheetAktKS = aktKSinOrderSort[numKS].Sheets[1];
+                    Excel.Range rangeAktKS = workSheetAktKS.get_Range(processingArea.FirstCell, processingArea.LastCell);
+                    string nameAktKS=null;
+                    WorkWithAktKSTehnadzor(workSheetAktKS, rangeAktKS, _adresAktKS[numKS],ref nameAktKS, ref totalScopeWorkAktKSone);
+                    forRecordWorkColumninSmeta.Add(totalScopeWorkAktKSone);
+                    nameAktKSRecordColumn[numKS] = nameAktKS;        
                     Marshal.FinalReleaseComObject(rangeAktKS);
-                    Marshal.FinalReleaseComObject(workSheetAktKS);
-                    nextInsertColumn += 1;
+                    Marshal.FinalReleaseComObject(workSheetAktKS); 
                 }
-                ZapisFormulaTehnadzor(SheetcopySmetaOne, rangeSmetaOne, keyCellVupolnSmeta, nextInsertColumn);
-                ObnulenieMinValue(SheetcopySmetaOne, rangeSmetaOne, nextInsertColumn);
-                Zakrutie(SheetcopySmetaOne, rangeSmetaOne, numSmeta);
+                ZapisinfileTehnadzor(sheetCopySmeta, rangeSmetaOne, forRecordWorkColumninSmeta,nameAktKSRecordColumn, ref nextInsertColumn, adresSmeta);
+                FormatZapisinCopySmeta(sheetCopySmeta, rangeSmetaOne, adresSmeta);
+                ZapisFormulaTehnadzor(sheetCopySmeta, rangeSmetaOne, keyCellConstructionWorkSmeta, nextInsertColumn);
+                ObnulenieMinValue(sheetCopySmeta, rangeSmetaOne, nextInsertColumn);           
             }
             catch (NullReferenceException ex)
             {
-                Console.WriteLine($"{ex.Message} Проверьте чтобы в {AdresSmeta[numSmeta]} было верно записано устойчивое выражение [№ пп] или [Кол.]");
-            }
-            Console.WriteLine(Task.CurrentId + "освобождает");
-            mutexObj.ReleaseMutex();
+                Console.WriteLine($"{ex.Message} Проверьте чтобы в {adresSmeta} было верно записано устойчивое выражение [№ пп] или [Кол.]");
+            }     
         }
 
         //метод возврашает строку - наименование столбца выполненных объемов работ по КС-2 за определенный период и заполняет словарь
         //где ключ -номер позиции по смете из Актов КС, значение выполнение по смете
-        private string WorkWithAktKSTehnadzor(Excel.Worksheet workSheetAktKS, Excel.Range rangeAktKS, string adresKs)
+        private void WorkWithAktKSTehnadzor(Excel.Worksheet workSheetAktKS, Excel.Range rangeAktKS, string adresKs, ref string nameAktKS,ref Dictionary<int, double> totalScopeWorkAktKSone)
         {
             //Console.WriteLine("WorkWithAktKSTehnadzor");
-            string nameAktKS = "Акт КС-2 №";
+            nameAktKS = "Акт КС-2 №";
             try
             {
                 RegexReg regul = new RegexReg();
@@ -94,49 +85,52 @@ namespace ConsoleApp3
             {
                 Console.WriteLine($"{ex.Message} Проверьте чтобы в {adresKs} было верно записано устойчивое выражение Номер документа или Дата составления");
             }
-            return nameAktKS;
         }
 
         //метод записывает в файл копии сметы объемы из Актов КС-2, каждый месяц в новый столбец,
         //вставка столбцов идет за столбцом объемы по смете  
-        private void ZapisinfileTehnadzor(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, string nameAktKS, int nextInsertColumn, int numSmeta)
+        private void ZapisinfileTehnadzor(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, List<Dictionary<int, double>> forRecordWorkColumninSmeta,string[] nameAktKSRecordColumn,ref int nextInsertColumn, string adresSmeta)
         {
             //Console.WriteLine(" ZapisinfileTehnadzor");
-            ICollection keyCollScopeWorkAktKSone = totalScopeWorkAktKSone.Keys;
-            int pozSmeta = 0;
-            for (int j = rangeSmetaOne.Row; j < rangeSmetaOne.Rows.Count + rangeSmetaOne.Row; j++)
+            int pozSmeta;
+            for (int i = 0; i < forRecordWorkColumninSmeta.Count ; i++)
             {
-                Excel.Range cellsNextColumnTablInsert = SheetcopySmetaOne.Cells[j, nextInsertColumn];
-                cellsNextColumnTablInsert.Insert(XlInsertShiftDirection.xlShiftToRight);
-                if (j > rangeSmetaOne.Row + 4)
+                ICollection keyCollScopeWorkAktKSone = forRecordWorkColumninSmeta[i].Keys;
+                for (int j = rangeSmetaOne.Row; j < rangeSmetaOne.Rows.Count + rangeSmetaOne.Row; j++)
                 {
-                    Excel.Range cellsNumPozColumnTabl = SheetcopySmetaOne.Cells[j, rangeSmetaOne.Column];
-                    if (cellsNumPozColumnTabl != null && cellsNumPozColumnTabl.Value2 != null && cellsNumPozColumnTabl.Value2.ToString() != "" && !cellsNumPozColumnTabl.MergeCells)
+                    Excel.Range cellsNextColumnTablInsert = SheetcopySmetaOne.Cells[j, nextInsertColumn];
+                    cellsNextColumnTablInsert.Insert(XlInsertShiftDirection.xlShiftToRight);
+                    if (j > rangeSmetaOne.Row + 4)
                     {
-                        try
+                        Excel.Range cellsNumPozColumnTabl = SheetcopySmetaOne.Cells[j, rangeSmetaOne.Column];
+                        if (cellsNumPozColumnTabl != null && cellsNumPozColumnTabl.Value2 != null && cellsNumPozColumnTabl.Value2.ToString() != "" && !cellsNumPozColumnTabl.MergeCells)
                         {
-                            pozSmeta = Convert.ToInt32(cellsNumPozColumnTabl.Value2);
-                            foreach (int pozSmetaAktKS in keyCollScopeWorkAktKSone)
+                            try
                             {
-                                if (pozSmeta == pozSmetaAktKS)
+                                pozSmeta = Convert.ToInt32(cellsNumPozColumnTabl.Value2);
+                                foreach (int pozSmetaAktKS in keyCollScopeWorkAktKSone)
                                 {
-                                    SheetcopySmetaOne.Cells[j, nextInsertColumn] = totalScopeWorkAktKSone[pozSmetaAktKS];
+                                    if (pozSmeta == pozSmetaAktKS)
+                                    {
+                                        SheetcopySmetaOne.Cells[j, nextInsertColumn] = forRecordWorkColumninSmeta[i][pozSmetaAktKS];
+                                    }
                                 }
                             }
-                        }
-                        catch (FormatException ex)
-                        {
-                            Console.WriteLine($"{ex.Message} Вы ввели неверный формат для {AdresSmeta[numSmeta]} в строке {cellsNumPozColumnTabl.Row} в столбце {cellsNumPozColumnTabl.Column}(не должно быть [.,букв], только целые числа ");
+                            catch (FormatException ex)
+                            {
+                                Console.WriteLine($"{ex.Message} Вы ввели неверный формат для {adresSmeta} в строке {cellsNumPozColumnTabl.Row} в столбце {cellsNumPozColumnTabl.Column}(не должно быть [.,букв], только целые числа ");
+                            }
                         }
                     }
                 }
+                Excel.Range topCellmergeCellNameAktKS = SheetcopySmetaOne.Cells[rangeSmetaOne.Row, nextInsertColumn];
+                Excel.Range bottomCellmergeCellNameAktKS = SheetcopySmetaOne.Cells[rangeSmetaOne.Row + 2, nextInsertColumn];
+                Excel.Range mergeCellNameAktKS = SheetcopySmetaOne.get_Range(topCellmergeCellNameAktKS, bottomCellmergeCellNameAktKS);
+                mergeCellNameAktKS.Merge();
+                mergeCellNameAktKS.Value = nameAktKSRecordColumn[i];
+                SheetcopySmetaOne.Cells[rangeSmetaOne.Row + 3, nextInsertColumn] = nextInsertColumn - rangeSmetaOne.Column + 1;
+                nextInsertColumn += 1;
             }
-            Excel.Range topCellmergeCellNameAktKS = SheetcopySmetaOne.Cells[rangeSmetaOne.Row, nextInsertColumn];
-            Excel.Range bottomCellmergeCellNameAktKS = SheetcopySmetaOne.Cells[rangeSmetaOne.Row + 2, nextInsertColumn];
-            Excel.Range mergeCellNameAktKS = SheetcopySmetaOne.get_Range(topCellmergeCellNameAktKS, bottomCellmergeCellNameAktKS);
-            mergeCellNameAktKS.Merge();
-            mergeCellNameAktKS.Value = nameAktKS;
-            SheetcopySmetaOne.Cells[rangeSmetaOne.Row + 3, nextInsertColumn] = nextInsertColumn - rangeSmetaOne.Column + 1;
         }
         //метод записывает в последний столбец "Остаток" формулу разности - остатка работ для технадзора
         private void ZapisFormulaTehnadzor(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, Excel.Range keyCellVupolnSmeta, int nextInsertColumn)
@@ -209,27 +203,15 @@ namespace ConsoleApp3
         }
 
         //метод возвращает отсортированный лист книг Иксель, акты КС для сметы
-        private List<Excel.Workbook> SortAktKSforTehnadzor(int numSmeta)
+        private List<Excel.Workbook> SortAktKSforTehnadzor(List<Excel.Workbook>  listAktKStoOneSmeta)
         {
             //Console.WriteLine(" SortAktKSforTehnadzor");
-            List<Excel.Workbook> aktKSpoPoradkySort = new List<Excel.Workbook>();
-            List<Excel.Workbook> aktKSinFolder = new List<Excel.Workbook>();
-            for (int v = 0; v < aktAllKSforOneSmeta[adresSmeta[numSmeta]].Count; v++)
-            {
-                for (int i = 0; i < containPapkaKS.Count; i++)
-                {
-                    if (adresAktKS[i] != aktAllKSforOneSmeta[adresSmeta[numSmeta]][v]) continue;
-                    else
-                    {
-                        aktKSinFolder.Add(containPapkaKS[i]);
-                    }
-                }
-            }
+            List<Excel.Workbook> aktKSinOrderSort = new List<Excel.Workbook>();           
             List<int> nomercifraList = new List<int>();
-            for (int i = 0; i < aktKSinFolder.Count; i++)
+            for (int i = 0; i < listAktKStoOneSmeta.Count; i++)
             {
                 string nomerAktKS = null; ; ;
-                string numerKS = aktKSinFolder[i].FullName;
+                string numerKS = listAktKStoOneSmeta[i].FullName;
                 for (int j = numerKS.Length - 8; j < numerKS.Length - 5; j++)
                 {
                     if (numerKS[j] >= '0' && numerKS[j] <= '9')
@@ -257,10 +239,10 @@ namespace ConsoleApp3
             for (int j = 0; j < nomercifraList.Count; j++)
             {
                 string cifrapropis = nomercifraList[j].ToString();
-                for (int i = 0; i < aktKSinFolder.Count; i++)
+                for (int i = 0; i < listAktKStoOneSmeta.Count; i++)
                 {
                     int countcifr = 0;
-                    string numerKS = aktKSinFolder[i].FullName;
+                    string numerKS = listAktKStoOneSmeta[i].FullName;
                     if (numerKS.Contains(cifrapropis))
                     {
                         for (int v = 0; v < numerKS.Length; v++)
@@ -272,13 +254,13 @@ namespace ConsoleApp3
                         }
                         if (countcifr == cifrapropis.Length)
                         {
-                            aktKSpoPoradkySort.Add(aktKSinFolder[i]);
+                            aktKSinOrderSort.Add(listAktKStoOneSmeta[i]);
                             break;
                         }
                     }
                 }
             }
-            return aktKSpoPoradkySort;
+            return aktKSinOrderSort;
         }
     }
 }

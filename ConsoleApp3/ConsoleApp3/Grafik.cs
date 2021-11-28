@@ -15,16 +15,16 @@ namespace ConsoleApp3
 {
     public class Grafik
     {
-        private List<Excel.Workbook> containPapkaSmeta;
-        private List<string> adresSmeta;
-        private Dictionary<Excel.Range, double> poRazdelyTrudozatrat;
-        private List<Excel.Range> cellsAllRazdel;
-        private Dictionary<int, double> chelChasforEachWork;
-        private List<int> numRowStartRazdel;
-        private Dictionary<int, string> nameforEachWorkinSmeta;
-        private Dictionary<string, List<int>> dayonEachWork;
-        private List<Dictionary<int, int>> allRazdelpoPoradky;
-        private double trudozatratTotal;
+        private List<Excel.Workbook> _containFolderSmeta;
+        private List<string> _adresSmeta;
+        private Dictionary<Excel.Range, double> _poRazdelyTrudozatrat;
+        private List<Excel.Range> _cellsAllRazdel;
+        private Dictionary<int, double> _chelChasForEachWork;
+        private List<int> _numRowStartRazdel;
+        private Dictionary<int, string> _nameForEachWorkinSmeta;
+        private Dictionary<string, List<int>> _dayOnEachWork;
+        private List<Dictionary<int, int>> _allRazdelInOrder;
+        private double _trudozatratTotal;
         public Grafik()
         { }
 
@@ -36,9 +36,9 @@ namespace ConsoleApp3
             try
             {
                 string usersmetu = @"D:\иксу";
-                containPapkaSmeta = ParserExc.GetBookAllAktKSandSmeta(usersmetu, excelApp);
-                adresSmeta = ParserExc.GetstringAdresa(usersmetu);
-                if (containPapkaSmeta.Count == 0 || adresSmeta.Count == 0)
+                _containFolderSmeta = ParserExc.GetBookAllAktKSandSmeta(usersmetu, excelApp);
+                _adresSmeta = ParserExc.GetstringAdresa(usersmetu);
+                if (_containFolderSmeta.Count == 0 || _adresSmeta.Count == 0)
                 {
                     throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
                 }
@@ -49,33 +49,33 @@ namespace ConsoleApp3
             }
         }
         //метод для работы над папкой со сметами в режиме график
-        public void ProccessGrafik(RangeFile obl, Excel.Application excelApp)
+        public void ProccessGrafik(RangeFile processingArea, Excel.Application excelApp)
         {
-            for (int numSmeta = 0; numSmeta < containPapkaSmeta.Count; numSmeta++)
+            for (int numSmeta = 0; numSmeta < _containFolderSmeta.Count; numSmeta++)
             {
-                WorkGrafik(numSmeta, obl, excelApp);
+                WorkGrafik(numSmeta, processingArea, excelApp);
             }
         }
         //работа надсметой для записи графика
-        private void WorkGrafik(int numSmeta, RangeFile obl, Excel.Application excelApp)
+        private void WorkGrafik(int numSmeta, RangeFile processingArea, Excel.Application excelApp)
         {
             //Console.WriteLine("WorkGrafik");
             try
             {
-                Excel.Worksheet workSheetoneSmeta = containPapkaSmeta[numSmeta].Sheets[1];
-                Excel.Range rangeoneSmeta = workSheetoneSmeta.get_Range(obl.FirstCell, obl.LastCell);
+                Excel.Worksheet workSheetoneSmeta = _containFolderSmeta[numSmeta].Sheets[1];
+                Excel.Range rangeoneSmeta = workSheetoneSmeta.get_Range(processingArea.FirstCell, processingArea.LastCell);
                 Excel.Range keyCellNumberPozSmeta = rangeoneSmeta.Find("№ пп");
                 Excel.Range keyCellColumnTopTrudozatrat = rangeoneSmeta.Find("Т/з осн. раб. Всего");
                 Excel.Range cellwithTrudozatrat = rangeoneSmeta.Find("Сметная трудоемкость");
                 string trudozatrataString = cellwithTrudozatrat.Value.ToString();
                 string nameFailSmeta;
-                ParserExc.GetNameSmeta(adresSmeta[numSmeta], out nameFailSmeta);
-                trudozatratTotal = ParserExc.CifrafromStringCell(trudozatrataString);
-                poRazdelyTrudozatrat = ParserExc.FindpoRazdely(workSheetoneSmeta, rangeoneSmeta, keyCellColumnTopTrudozatrat, keyCellNumberPozSmeta);
-                cellsAllRazdel = ParserExc.FindRazdel(workSheetoneSmeta, rangeoneSmeta, keyCellNumberPozSmeta);
-                numRowStartRazdel = new List<int>();
-                chelChasforEachWork = ChelChaspoRabotam(workSheetoneSmeta, rangeoneSmeta, keyCellNumberPozSmeta, keyCellColumnTopTrudozatrat, adresSmeta[numSmeta]);
-                nameforEachWorkinSmeta = NameWorkinPozSmeta(workSheetoneSmeta, rangeoneSmeta, keyCellNumberPozSmeta, adresSmeta[numSmeta]);
+                ParserExc.GetNameSmeta(_adresSmeta[numSmeta], out nameFailSmeta);
+                _trudozatratTotal = ParserExc.CifrafromStringCell(trudozatrataString);
+                _poRazdelyTrudozatrat = ParserExc.FindpoRazdely(workSheetoneSmeta, rangeoneSmeta, keyCellColumnTopTrudozatrat, keyCellNumberPozSmeta);
+                _cellsAllRazdel = ParserExc.FindRazdel(workSheetoneSmeta, rangeoneSmeta, keyCellNumberPozSmeta);
+                _numRowStartRazdel = new List<int>();
+                _chelChasForEachWork = ChelChaspoRabotam(workSheetoneSmeta, rangeoneSmeta, keyCellNumberPozSmeta, keyCellColumnTopTrudozatrat, _adresSmeta[numSmeta]);
+                _nameForEachWorkinSmeta = NameWorkinPozSmeta(workSheetoneSmeta, rangeoneSmeta, keyCellNumberPozSmeta, _adresSmeta[numSmeta]);
                 //для базы данных начало
                 Regex nameSmeta = new Regex(@"Тепловые сети", RegexOptions.IgnoreCase);
                 List<Regex> RazdelAll = new List<Regex>();
@@ -105,24 +105,24 @@ namespace ConsoleApp3
                 FORRazdelAll.Add(forrazdel7);
                 FORRazdelAll.Add(forrazdel8);
                 //для базы данных конец
-                allRazdelpoPoradky = new List<Dictionary<int, int>>();
+                _allRazdelInOrder = new List<Dictionary<int, int>>();
                 for (int i = 0; i < RazdelAll.Count; i++)
                 {
-                    RasstanovkaAllWorkspoPoradky(RazdelAll[i], FORRazdelAll[i], ref allRazdelpoPoradky);
+                    RankingAllWorksInOrder(RazdelAll[i], FORRazdelAll[i], ref _allRazdelInOrder);
                 }
                 Excel.Workbook excelBookData = excelApp.Workbooks.Open(@"D:\даты\data-20191112T1252-structure-20191112T1247.csv");
                 Excel.Worksheet workSheetData = excelBookData.Sheets[1];
                 Excel.Range rangeData = workSheetData.get_Range("A1", "A30");
-                int daysforWork = 0, numberofWorkers = 0;
+                int daysForWork = 0, numberOfWorkers = 0;
                 DataVvod dataStartWork = new DataVvod();
-                VvodDataorNumberofWorkers(ref dataStartWork, ref daysforWork, ref numberofWorkers);
+                InputDataorNumberofWorkers(ref dataStartWork, ref daysForWork, ref numberOfWorkers);
                 int monthsforWork;
-                double delta = (daysforWork / 21.0) - (int)(daysforWork / 21);
-                if (delta < 0.04) monthsforWork = daysforWork / 21;
-                else monthsforWork = 1 + daysforWork / 21;
-                dayonEachWork = ParserExc.DninaRabotyZadan(rangeData, dataStartWork, monthsforWork, daysforWork);
+                double delta = (daysForWork / 21.0) - (int)(daysForWork / 21);
+                if (delta < 0.04) monthsforWork = daysForWork / 21;
+                else monthsforWork = 1 + daysForWork / 21;
+                _dayOnEachWork = ParserExc.DninaRabotyZadan(rangeData, dataStartWork, monthsforWork, daysForWork);
                 string grafikAdress = @"D:\график\результат\График производства работ - " + nameFailSmeta;
-                ZapisGrafik(excelApp, workSheetoneSmeta, grafikAdress, numberofWorkers);
+                RecordGrafik(excelApp, workSheetoneSmeta, grafikAdress, numberOfWorkers);
                 object misValue = System.Reflection.Missing.Value;
                 Marshal.FinalReleaseComObject(rangeData);
                 Marshal.FinalReleaseComObject(workSheetData);
@@ -130,16 +130,16 @@ namespace ConsoleApp3
                 Marshal.FinalReleaseComObject(excelBookData);
                 Marshal.FinalReleaseComObject(rangeoneSmeta);
                 Marshal.FinalReleaseComObject(workSheetoneSmeta);
-                containPapkaSmeta[numSmeta].Close(true, misValue, misValue);
-                Marshal.FinalReleaseComObject(containPapkaSmeta[numSmeta]);
+                _containFolderSmeta[numSmeta].Close(true, misValue, misValue);
+                Marshal.FinalReleaseComObject(_containFolderSmeta[numSmeta]);
             }
             catch (NullReferenceException ex)
             {
-                Console.WriteLine($"{ex.Message} Проверьте чтобы в {adresSmeta[numSmeta]} было верно записано устойчивое выражение [№ пп] или [Кол.] или трудоемкость");
+                Console.WriteLine($"{ex.Message} Проверьте чтобы в {_adresSmeta[numSmeta]} было верно записано устойчивое выражение [№ пп] или [Кол.] или трудоемкость");
             }
         }
         //метод для ввода исходных данных от пользователя  для построения графика
-        private void VvodDataorNumberofWorkers(ref DataVvod dataStartWork, ref int daysforWork, ref int numberofWorkers)
+        private void InputDataorNumberofWorkers(ref DataVvod dataStartWork, ref int daysForWork, ref int numberOfWorkers)
         {
             //Console.WriteLine("VvodDataorNumberofWorkers");
             try
@@ -158,31 +158,31 @@ namespace ConsoleApp3
                     case ChangeSelect.DaysforWork:
                         {
                             Console.WriteLine("Введите количество дней, планируемых на данные виды работ");
-                            daysforWork = Int32.Parse(Console.ReadLine());
-                            numberofWorkers = (int)(trudozatratTotal / (daysforWork * 8));
-                            deltaLessthenOne = (trudozatratTotal / (daysforWork * 8)) - numberofWorkers;
-                            Console.WriteLine($"Nrab = {numberofWorkers}  dayrab { daysforWork} delta {deltaLessthenOne}");
+                            daysForWork = Int32.Parse(Console.ReadLine());
+                            numberOfWorkers = (int)(_trudozatratTotal / (daysForWork * 8));
+                            deltaLessthenOne = (_trudozatratTotal / (daysForWork * 8)) - numberOfWorkers;
+                            Console.WriteLine($"Nrab = {numberOfWorkers}  dayrab { daysForWork} delta {deltaLessthenOne}");
                             if (deltaLessthenOne >= 0.5)
                             {
-                                numberofWorkers += 1;
-                                daysforWork += 1;
+                                numberOfWorkers += 1;
+                                daysForWork += 1;
                             }
                             else
                             {
-                                daysforWork += 2;
+                                daysForWork += 2;
                             }
                             break;
                         }
                     case ChangeSelect.NumberofWorker:
                         {
                             Console.WriteLine("Введите количество человек в бригаде, планируемых на данные виды работ");
-                            numberofWorkers = Int32.Parse(Console.ReadLine());
-                            daysforWork = (int)(trudozatratTotal / (numberofWorkers * 8));
-                            deltaLessthenOne = (trudozatratTotal / (numberofWorkers * 8)) - daysforWork;
-                            Console.WriteLine($"Nrab = {numberofWorkers}  dayrab { daysforWork} delta {deltaLessthenOne}");
-                            if (deltaLessthenOne > 0.05) daysforWork += 2;
-                            else daysforWork += 1;
-                            Console.WriteLine($"Nrab = {numberofWorkers}  dayrab { daysforWork} delta {deltaLessthenOne}");
+                            numberOfWorkers = Int32.Parse(Console.ReadLine());
+                            daysForWork = (int)(_trudozatratTotal / (numberOfWorkers * 8));
+                            deltaLessthenOne = (_trudozatratTotal / (numberOfWorkers * 8)) - daysForWork;
+                            Console.WriteLine($"Nrab = {numberOfWorkers}  dayrab { daysForWork} delta {deltaLessthenOne}");
+                            if (deltaLessthenOne > 0.05) daysForWork += 2;
+                            else daysForWork += 1;
+                            Console.WriteLine($"Nrab = {numberOfWorkers}  dayrab { daysForWork} delta {deltaLessthenOne}");
                             break;
                         }
                     default:
@@ -198,23 +198,23 @@ namespace ConsoleApp3
 
 
         //возвращает  словарь, где ключ - номер по смете, значение - трудозатраты на данную работу
-        private Dictionary<int, double> ChelChaspoRabotam(Excel.Worksheet workSheetoneSmeta, Excel.Range rangeoneSmeta, Excel.Range keyCellNumberPozSmeta, Excel.Range keyCellColumnTopTrudozatrat, string AdresSmeta)
+        private Dictionary<int, double> ChelChaspoRabotam(Excel.Worksheet workSheetOneSmeta, Excel.Range rangeOneSmeta, Excel.Range keyCellNumberPozSmeta, Excel.Range keyCellColumnTopTrudozatrat, string AdresSmeta)
         {
             //Console.WriteLine("ChelChaspoRabotam");
             Dictionary<int, double> chelChasforEachWork = new Dictionary<int, double>();
             double trudozatratofWork;
             int numPozSmeta, indexAllRazdel = 0;
-            for (int j = keyCellNumberPozSmeta.Row + 4; j <= rangeoneSmeta.Rows.Count; j++)
+            for (int j = keyCellNumberPozSmeta.Row + 4; j <= rangeOneSmeta.Rows.Count; j++)
             {
-                Excel.Range cellsNumberPozColumnTabl = workSheetoneSmeta.Cells[j, keyCellNumberPozSmeta.Column];
-                Excel.Range cellsColumnTrudozatrat = workSheetoneSmeta.Cells[j, keyCellColumnTopTrudozatrat.Column];
+                Excel.Range cellsNumberPozColumnTabl = workSheetOneSmeta.Cells[j, keyCellNumberPozSmeta.Column];
+                Excel.Range cellsColumnTrudozatrat = workSheetOneSmeta.Cells[j, keyCellColumnTopTrudozatrat.Column];
                 if (cellsNumberPozColumnTabl != null && cellsNumberPozColumnTabl.Value2 != null && !cellsNumberPozColumnTabl.MergeCells && cellsNumberPozColumnTabl.Value2.ToString() != "" && cellsColumnTrudozatrat != null && cellsColumnTrudozatrat.Value2 != null && !cellsColumnTrudozatrat.MergeCells && cellsColumnTrudozatrat.Value2.ToString() != "")
                 {
                     try
                     {
                         int numCellspoNumPozSmeta = cellsNumberPozColumnTabl.Row;
                         numPozSmeta = Convert.ToInt32(cellsNumberPozColumnTabl.Value2);
-                        ParserExc.OrientRazdel(cellsAllRazdel, numPozSmeta, numCellspoNumPozSmeta, ref indexAllRazdel, ref numRowStartRazdel);
+                        ParserExc.OrientRazdel(_cellsAllRazdel, numPozSmeta, numCellspoNumPozSmeta, ref indexAllRazdel, ref _numRowStartRazdel);
                         trudozatratofWork = Convert.ToDouble(cellsColumnTrudozatrat.Value2);
                         chelChasforEachWork.Add(numPozSmeta, trudozatratofWork);
                     }
@@ -235,19 +235,19 @@ namespace ConsoleApp3
             return chelChasforEachWork;
         }
         //возвращает  словарь, где ключ - номер по смете, значение - строковое наименование данных работ
-        private Dictionary<int, string> NameWorkinPozSmeta(Excel.Worksheet workSheetoneSmeta, Excel.Range rangeoneSmeta, Excel.Range keyCellNumberPozSmeta, string AdresSmeta)
+        private Dictionary<int, string> NameWorkinPozSmeta(Excel.Worksheet workSheetOneSmeta, Excel.Range rangeOneSmeta, Excel.Range keyCellNumberPozSmeta, string AdresSmeta)
         {
             //Console.WriteLine("NameWorkinPozSmeta");
-            int[] keyTrudozatratEachWork = chelChasforEachWork.Keys.ToArray();
-            Dictionary<int, string> nameforEachWorkinSmeta = new Dictionary<int, string>();
+            int[] keyTrudozatratEachWork = _chelChasForEachWork.Keys.ToArray();
+            Dictionary<int, string> nameForEachWorkinSmeta = new Dictionary<int, string>();
             int numPozSmeta;
             string nameWorkinPozSmeta;
-            Excel.Range keyCellNameWork = rangeoneSmeta.Find("Наименование");
-            for (int j = keyCellNumberPozSmeta.Row + 4; j <= rangeoneSmeta.Rows.Count; j++)
+            Excel.Range keyCellNameWork = rangeOneSmeta.Find("Наименование");
+            for (int j = keyCellNumberPozSmeta.Row + 4; j <= rangeOneSmeta.Rows.Count; j++)
             {
 
-                Excel.Range cellsNumberPozColumnTabl = workSheetoneSmeta.Cells[j, keyCellNumberPozSmeta.Column];
-                Excel.Range cellsNameWorkColumnTabl = workSheetoneSmeta.Cells[j, keyCellNameWork.Column];
+                Excel.Range cellsNumberPozColumnTabl = workSheetOneSmeta.Cells[j, keyCellNumberPozSmeta.Column];
+                Excel.Range cellsNameWorkColumnTabl = workSheetOneSmeta.Cells[j, keyCellNameWork.Column];
                 if (cellsNumberPozColumnTabl != null && cellsNumberPozColumnTabl.Value2 != null && !cellsNumberPozColumnTabl.MergeCells && cellsNumberPozColumnTabl.Value2.ToString() != "" && cellsNameWorkColumnTabl != null && cellsNameWorkColumnTabl.Value2 != null && !cellsNameWorkColumnTabl.MergeCells && cellsNameWorkColumnTabl.Value2.ToString() != "")
                 {
                     try
@@ -259,7 +259,7 @@ namespace ConsoleApp3
                             if (numPozSmeta == keyTrudozatratEachWork[i])
                             {
                                 nameWorkinPozSmeta = cellsNameWorkColumnTabl.Value.ToString();
-                                nameforEachWorkinSmeta.Add(numPozSmeta, nameWorkinPozSmeta);
+                                nameForEachWorkinSmeta.Add(numPozSmeta, nameWorkinPozSmeta);
                             }
                         }
                     }
@@ -273,17 +273,17 @@ namespace ConsoleApp3
                     }
                 }
             }
-            return nameforEachWorkinSmeta;
+            return nameForEachWorkinSmeta;
         }
 
         //меняет по ссылке лист, состоящий из словарей,где ключ - номер по смете, значение - номер строки в массиве наименования данных работ для всех разделов
-        private void RasstanovkaAllWorkspoPoradky(Regex regulNameOfRazdel, Regex regulNameWorkOfRazdel, ref List<Dictionary<int, int>> allRazdelpoPoradky)
+        private void RankingAllWorksInOrder(Regex regulNameOfRazdel, Regex regulNameWorkOfRazdel, ref List<Dictionary<int, int>> _allRazdelInOrder)
         {
             //Console.WriteLine("RasstanovkaAllWorkspoPoradky");
-            int[] keynumerTrudozatratEachWork = chelChasforEachWork.Keys.ToArray();
-            string[] valueNameofEachWork = nameforEachWorkinSmeta.Values.ToArray();
+            int[] keynumerTrudozatratEachWork = _chelChasForEachWork.Keys.ToArray();
+            string[] valueNameofEachWork = _nameForEachWorkinSmeta.Values.ToArray();
             Dictionary<int, int> inRazdelnumerPozandnumWorkinArr;
-            ICollection keyColl2CellRazdelTrudozatrat = poRazdelyTrudozatrat.Keys;
+            ICollection keyColl2CellRazdelTrudozatrat = _poRazdelyTrudozatrat.Keys;
             foreach (Excel.Range stringPoRazdely in keyColl2CellRazdelTrudozatrat)
             {
                 string stringPoRazdelyforPoisk = stringPoRazdely.Value.ToString();
@@ -294,7 +294,7 @@ namespace ConsoleApp3
                     inRazdelnumerPozandnumWorkinArr = ParserExc.PoradokRazdel(regulNameWorkOfRazdel, valueNameofEachWork, keynumerTrudozatratEachWork);
                     if (inRazdelnumerPozandnumWorkinArr.Count > 0)
                     {
-                        allRazdelpoPoradky.Add(inRazdelnumerPozandnumWorkinArr);
+                        _allRazdelInOrder.Add(inRazdelnumerPozandnumWorkinArr);
                         countRazdel++;
                     }
                 }
@@ -304,7 +304,7 @@ namespace ConsoleApp3
         }
 
         //закрашивает график в соответствие с данными
-        public void ZapisGrafik(Excel.Application excelApp, Excel.Worksheet workSheetoneSmeta, string grafikAdress, int numberofWorkers)
+        public void RecordGrafik(Excel.Application excelApp, Excel.Worksheet workSheetoneSmeta, string grafikAdress, int numberofWorkers)
         {
             //Console.WriteLine("ZapisGrafik");
             Excel.Workbook workBookGrafik = excelApp.Workbooks.Add();
@@ -326,8 +326,8 @@ namespace ConsoleApp3
             GrafikNext.Merge();
             GrafikNext.Value = "Кол-во рабоч. дней";
             Excel.Range firstMonth, lastMonth = null;
-            List<int>[] valueAllWorkDaysforMonth = dayonEachWork.Values.ToArray();
-            string[] keyNameDataWork = dayonEachWork.Keys.ToArray();
+            List<int>[] valueAllWorkDaysforMonth = _dayOnEachWork.Values.ToArray();
+            string[] keyNameDataWork = _dayOnEachWork.Keys.ToArray();
             for (int i = 0; i < valueAllWorkDaysforMonth.Length; i++)
             {
                 firstMonth = workSheetGrafik.Cells[GrafikNext.Row, GrafikNext.Column + 1];
@@ -343,7 +343,7 @@ namespace ConsoleApp3
             }
             Console.WriteLine("lastMonth= " + lastMonth.Column);
             int amountOfWorkinRazdel = 0;
-            int[] numRazdelTablExcelGrafik = new int[cellsAllRazdel.Count];
+            int[] numRazdelTablExcelGrafik = new int[_cellsAllRazdel.Count];
             Zapisstrok(workSheetoneSmeta, numberofWorkers, workSheetGrafik, ref amountOfWorkinRazdel, ref numRazdelTablExcelGrafik);
             Excel.Range LastCellGrafik = workSheetGrafik.Cells[FirstCellGrafik.Row + amountOfWorkinRazdel + 1, lastMonth.Column];
             Excel.Range forIs = workSheetGrafik.get_Range(FirstCellGrafik, LastCellGrafik);
@@ -424,25 +424,25 @@ namespace ConsoleApp3
             Excel.Range firstCellAfterContent = workSheetGrafik.Range["B6"];
             int indexAmountWorkinRazdel = 0, AmountofWorkerinEachWork = 0, numPozGrafik = 0, indexOfPozRazdel = 0;
             double zapasPartofDayAfterWork = 0;
-            double[] trudozatratForRazdel = poRazdelyTrudozatrat.Values.ToArray();
-            string[] valueNameofEachWork = nameforEachWorkinSmeta.Values.ToArray();
-            double[] valueTrudozatratEachWork = chelChasforEachWork.Values.ToArray();
+            double[] trudozatratForRazdel = _poRazdelyTrudozatrat.Values.ToArray();
+            string[] valueNameofEachWork = _nameForEachWorkinSmeta.Values.ToArray();
+            double[] valueTrudozatratEachWork = _chelChasForEachWork.Values.ToArray();
             Console.WriteLine("poisk.Length " + valueNameofEachWork.Length);
-            for (int i = 0; i < allRazdelpoPoradky.Count; i++)
+            for (int i = 0; i < _allRazdelInOrder.Count; i++)
             {
                 //chet++;
                 int indexAmountofRowEachWorkinRazdel;
-                int[] keyNumPozSmetaRazdelpoPoradky = allRazdelpoPoradky[i].Keys.ToArray();
-                int[] valueNumPozWorkinRazdelpoPoradky = allRazdelpoPoradky[i].Values.ToArray();
-                for (int r = 0; r < cellsAllRazdel.Count; r++)
+                int[] keyNumPozSmetaRazdelpoPoradky = _allRazdelInOrder[i].Keys.ToArray();
+                int[] valueNumPozWorkinRazdelpoPoradky = _allRazdelInOrder[i].Values.ToArray();
+                for (int r = 0; r < _cellsAllRazdel.Count; r++)
                 {
-                    int numRowofFirstWorkofRazdel = cellsAllRazdel[r].Row + 1;
-                    Excel.Range cellFirstWorkinRazdel = workSheetoneSmeta.Cells[numRowofFirstWorkofRazdel, cellsAllRazdel[r].Column];
+                    int numRowofFirstWorkofRazdel = _cellsAllRazdel[r].Row + 1;
+                    Excel.Range cellFirstWorkinRazdel = workSheetoneSmeta.Cells[numRowofFirstWorkofRazdel, _cellsAllRazdel[r].Column];
                     int pozFirstWorkinRazdel = Convert.ToInt32(cellFirstWorkinRazdel.Value2);
                     if (keyNumPozSmetaRazdelpoPoradky[indexAmountWorkinRazdel] == pozFirstWorkinRazdel)
                     {
                         indexAmountofRowEachWorkinRazdel = 0;
-                        string nameOfRazdel = cellsAllRazdel[r].Value.ToString();
+                        string nameOfRazdel = _cellsAllRazdel[r].Value.ToString();
                         Console.WriteLine("valueNumPozWorkinRazdelpoPoradky.Length " + valueNumPozWorkinRazdelpoPoradky.Length);
                         workSheetGrafik.Cells[firstCellAfterContent.Row + amountOfWorkinRazdel, firstCellAfterContent.Column] = ++numPozGrafik;
                         numRazdelTablExcelGrafik[indexOfPozRazdel++] = firstCellAfterContent.Row + amountOfWorkinRazdel;
@@ -455,10 +455,10 @@ namespace ConsoleApp3
                             daysOfEachWork += 1;
                         }
                         workSheetGrafik.Cells[firstCellAfterContent.Row + amountOfWorkinRazdel, firstCellAfterContent.Column + 4] = daysOfEachWork;
-                        Console.WriteLine(i + " amountOfWorkinRazdel " + amountOfWorkinRazdel + " nameOfRazdel " + nameOfRazdel + " trudozatratForRazdel " + trudozatratForRazdel[i] + " numRowStartRazdel " + numRowStartRazdel[i]);
+                        Console.WriteLine(i + " amountOfWorkinRazdel " + amountOfWorkinRazdel + " nameOfRazdel " + nameOfRazdel + " trudozatratForRazdel " + trudozatratForRazdel[i] + " numRowStartRazdel " + _numRowStartRazdel[i]);
                         do
                         {
-                            if (r < cellsAllRazdel.Count - 1 && keyNumPozSmetaRazdelpoPoradky[indexAmountWorkinRazdel] >= numRowStartRazdel[r + 1])
+                            if (r < _cellsAllRazdel.Count - 1 && keyNumPozSmetaRazdelpoPoradky[indexAmountWorkinRazdel] >= _numRowStartRazdel[r + 1])
                             {
                                 break;
                             }

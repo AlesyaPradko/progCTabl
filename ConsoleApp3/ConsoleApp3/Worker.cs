@@ -11,114 +11,125 @@ namespace ConsoleApp3
 {
     public abstract class Worker 
     {
-        protected Dictionary<int, double> totalScopeWorkAktKSone;
-        protected List<string> adresSmeta;
-        protected List<string> adresAktKS;
-        protected List<Excel.Workbook> containPapkaKS;
-        private List<Excel.Workbook> containPapkaSmeta;
-        protected List<Excel.Workbook> containCopySmeta;
-        protected Dictionary<string, List<string>> aktAllKSforOneSmeta;
-        public Task[] taskobrabotka;
+        //protected Dictionary<int, double> totalScopeWorkAktKSone;
+        protected List<string> _adresSmeta;
+        protected List<string> _adresAktKS;
+        protected string _userSmeta;
+        protected string _userKS;
+        protected string _userWhereSave;
+        protected Dictionary<string, List<string>> _aktAllKSforOneSmeta;
+        public Task[] _taskobrabotka;
+        //private Mutex _mutex = new Mutex();
 
         public Worker()
         { }
 
-
-        public List<Excel.Workbook> ContainPapkaSmeta
-        {
-            get { return containPapkaSmeta; }
-            private set { }
-        }
         public List<string> AdresSmeta
         {
-            get { return adresSmeta; }
+            get { return _adresSmeta; }
             private set { }
         }
         public List<string> AdresAktKS
         {
-            get { return adresAktKS; }
+            get { return _adresAktKS; }
             private set { }
         }
-        public List<Excel.Workbook> ContainPapkaKS
-        {
-            get { return containPapkaKS; }
-            private set { }
-        }
-        //public List<Excel.Workbook> CopySmet { get; set; }
-
-        //public Dictionary<string, List<string>> KskSmete { get; set; }
+ 
 
         //метод инициализирует листы и словари хранящие в себе сметы, Акты КС-2 (адреса и книги)
-        public void Initialization(Excel.Application excelApp)
+        public void Initialization()
         {
             // выбор в проводнике, пользователь сам выбирает папку
-            //Console.WriteLine("Initialization");
-            try
-            {
-                string usersmeta = @"D:\иксу";
-                containPapkaSmeta = ParserExc.GetBookAllAktKSandSmeta(usersmeta, excelApp);
-                adresSmeta = ParserExc.GetstringAdresa(usersmeta);
-                if (containPapkaSmeta.Count == 0 || adresSmeta.Count == 0)
-                {
-                    throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
-                }
+            //Console.WriteLine("Initialization");      
+                _userSmeta = @"D:\иксу";             
+                _adresSmeta = ParserExc.GetstringAdresa(_userSmeta);            
                 // свыбор в проводнике, пользователь сам выбирает папку
-                string userKS = @"D:\икси";
-                adresAktKS = ParserExc.GetstringAdresa(userKS);
+                _userKS = @"D:\икси";
+                _adresAktKS = ParserExc.GetstringAdresa(_userKS);
                 // выбор в проводнике, пользователь сам выбирает папку
-                string userwheresave = @"D:\икси 2";
-                userwheresave += "\\Копия";
-                containCopySmeta = MadeCopyAllCopySmet(userwheresave, usersmeta, excelApp);
-                containPapkaKS = ParserExc.GetBookAllAktKSandSmeta(userKS, excelApp);
-                if (containPapkaKS.Count == 0 || adresAktKS.Count == 0)
-                {
-                    throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
-                }
-                aktAllKSforOneSmeta = ParserExc.GetContainAktKSinOneSmeta(ContainPapkaKS, AdresSmeta, AdresAktKS);
-            }
-            catch (DonthaveExcelException ex)
-            {
-                Console.WriteLine(ex.parName);
-            }
+                _userWhereSave = @"D:\икси 2";
+                _userWhereSave += "\\Копия";
         }
         //копирует последовательно все сметы в выбранную папку
-        private List<Excel.Workbook> MadeCopyAllCopySmet(string userwheresave, string usersmeta, Excel.Application excelApp)
+        private List<Excel.Workbook> MadeCopyAllCopySmet(Excel.Application excelApp, List<Excel.Workbook> containFolderSmeta)
         {
             //Console.WriteLine("MadeCopyExcbook");
             List<Excel.Workbook> containCopySmeta = new List<Excel.Workbook>();
-            for (int u = 0; u < containPapkaSmeta.Count; u++)
+            for (int u = 0; u < containFolderSmeta.Count; u++)
             {
-                string testuserwheresave = userwheresave;
-                testuserwheresave += $"{ adresSmeta[u].Remove(0, usersmeta.Length + 1)}";//оставляет имя сметы(без пути)
-                Excel.Workbook excelBookcopySmet = ParserExc.CopyExcelSmetaOne(adresSmeta[u], testuserwheresave, excelApp);
+                string testuserwheresave = _userWhereSave;
+                testuserwheresave += $"{ _adresSmeta[u].Remove(0, _userSmeta.Length + 1)}";//оставляет имя сметы(без пути)
+                Console.WriteLine("testuserwheresave " +testuserwheresave);
+                Excel.Workbook excelBookcopySmet = ParserExc.CopyExcelSmetaOne(_adresSmeta[u], testuserwheresave, excelApp);
                 containCopySmeta.Add(excelBookcopySmet);
+                Console.WriteLine("excelBookcopySmet.FullName " + excelBookcopySmet.FullName);
             }
             return containCopySmeta;
         }
 
         //метод для работы над папкой со сметами в разных режимах
-        public void ProccessAll(RangeFile oblastobrabotki)
+        public void ProccessAll(RangeFile processingArea, Excel.Application excelApp)
         {
-            //Mutex[] mutexObj = new Mutex[containCopySmeta.Count];
-            taskobrabotka = new Task[containCopySmeta.Count];
-            for (int num = 0; num < containCopySmeta.Count; num++)
+            //лист мсеты получение
+            try
             {
-                // mutexObj[num] = new Mutex();
-                taskobrabotka[num] = Task.Factory.StartNew(() =>
+                List<Excel.Workbook> containFolderSmeta = ParserExc.GetBookAllAktKSandSmeta(_userSmeta, excelApp);
+                if (containFolderSmeta.Count == 0 || _adresSmeta.Count == 0)
                 {
-                    //mutexObj[(int)Task.CurrentId - 1].WaitOne();
-                    Console.WriteLine(Task.CurrentId + "начал  работу");
-                    ProcessSmeta(oblastobrabotki);
-                    Console.WriteLine(Task.CurrentId + "завершил  работу");
-                    //mutexObj[(int)Task.CurrentId - 1].ReleaseMutex();
-
-                });
+                    throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
+                }
+                List<Excel.Workbook> containCopySmeta = MadeCopyAllCopySmet(excelApp, containFolderSmeta);
+                List<Excel.Workbook> containFolderKS = ParserExc.GetBookAllAktKSandSmeta(_userKS, excelApp);
+                if (containFolderKS.Count == 0 || _adresAktKS.Count == 0)
+                {
+                    throw new DonthaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку");
+                }
+                _aktAllKSforOneSmeta = ParserExc.GetContainAktKSinOneSmeta(containFolderKS, AdresSmeta, AdresAktKS);
+                _taskobrabotka = new Task[containCopySmeta.Count];
+                for (int numSmeta = 0; numSmeta < containCopySmeta.Count; numSmeta++)
+                {
+                    _taskobrabotka[numSmeta] = Task.Factory.StartNew(() =>
+                    {
+                       
+                        Console.WriteLine(Task.CurrentId + "начал  работу");
+                        //_mutex.WaitOne();
+                        Excel.Worksheet sheetCopySmeta = containCopySmeta[(int)Task.CurrentId-1].Sheets[1];
+                        //получение листа кс к смете
+                        List<Excel.Workbook> listAktKStoOneSmeta = GetAllAktKStoOneSmeta(containFolderKS, (int)Task.CurrentId - 1);
+                        //_mutex.ReleaseMutex();
+                        ProcessSmeta(listAktKStoOneSmeta, sheetCopySmeta, processingArea,_adresSmeta[(int)Task.CurrentId - 1]);
+                        Zakrutie(listAktKStoOneSmeta, containCopySmeta[(int)Task.CurrentId - 1], sheetCopySmeta);
+                        Console.WriteLine(Task.CurrentId + "завершил  работу");
+                       
+                    });
+                }
+                Task.WaitAll(_taskobrabotka);
             }
-            Task.WaitAll(taskobrabotka);
-        }
+            catch (DonthaveExcelException ex)
+            {
+                Console.WriteLine(ex.parName);
+            }
 
+}
+        private List<Excel.Workbook> GetAllAktKStoOneSmeta(List<Excel.Workbook> containFolderKS, int numSmeta)
+        {
+            List<Excel.Workbook> listAktKStoOneSmeta = new List<Excel.Workbook>();
+            for (int v = 0; v < _aktAllKSforOneSmeta[_adresSmeta[numSmeta]].Count; v++)
+            {
+                for (int numKS = 0; numKS < containFolderKS.Count; numKS++)
+                {
+                    if (_adresAktKS[numKS] != _aktAllKSforOneSmeta[_adresSmeta[numSmeta]][v]) continue;
+                    else
+                    {
+                        listAktKStoOneSmeta.Add(containFolderKS[numKS]);
+                        Console.WriteLine("containFolderKS[numKS] " + containFolderKS[numKS].FullName);
+                    }
+                }
+            }
+            return listAktKStoOneSmeta;
+        }
         //метод переопределяется в классах-наследниках для работы над сметой в разных режимах
-        protected abstract void ProcessSmeta(RangeFile oblastobrabotki);
+        protected abstract void ProcessSmeta(List<Excel.Workbook> listAktKStoOneSmeta, Excel.Worksheet sheetCopySmeta, RangeFile processingArea,string adresSmeta);
         //метод возвращает ячейку в которой хранится название Акта КС-2 и его дата составления
         protected Excel.Range FindCellforNameKS(Excel.Worksheet workSheetAktKS, Excel.Range findNomerorDataKS)
         {
@@ -154,7 +165,7 @@ namespace ConsoleApp3
             }
         }
 
-        protected void FormatZapisinCopySmeta(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, int numSmeta)
+        protected void FormatZapisinCopySmeta(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, string adresSmeta)
         {
             //Console.WriteLine("FormatZapisinCopySmeta");
             try
@@ -182,7 +193,7 @@ namespace ConsoleApp3
                 Console.WriteLine(" Column last " + lastCellFormat.Column);
                 if (lastCellFormat.Column >= rangeSmetaOne.Columns.Count)
                 {
-                    throw new ZapredelException($"Вы задали слишком малую ширину для {adresSmeta[numSmeta]}");
+                    throw new ZapredelException($"Вы задали слишком малую ширину для {adresSmeta}");
                     //return;
                 }
                 Excel.Range firstCellFormat = SheetcopySmetaOne.Cells[rangeSmetaOne.Row, rangeSmetaOne.Column];
@@ -202,26 +213,19 @@ namespace ConsoleApp3
             }
         }
         //метод закрывает открытые файлы КС
-        protected void Zakrutie(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, int numSmeta)
+        protected void Zakrutie(List<Excel.Workbook>  listAktKStoOneSmeta, Excel.Workbook copySmeta, Excel.Worksheet SheetcopySmetaOne)
         {
             Console.WriteLine("Zakrutie");
             object misValue = System.Reflection.Missing.Value;
-            for (int v = 0; v < aktAllKSforOneSmeta[adresSmeta[numSmeta]].Count; v++)
+            for (int i = 0; i < listAktKStoOneSmeta.Count; i++)
             {
-                for (int i = 0; i < containPapkaKS.Count; i++)
-                {
-                    if (adresAktKS[i] == aktAllKSforOneSmeta[adresSmeta[numSmeta]][v])
-                    {
-                        containPapkaKS[i].Close(false, misValue, misValue);
-                        Marshal.FinalReleaseComObject(containPapkaKS[i]);
-                    }
-                    else continue;
-                }
-            }
-            Marshal.FinalReleaseComObject(rangeSmetaOne);
+
+                listAktKStoOneSmeta[i].Close(false, misValue, misValue);
+   
+            } 
             Marshal.FinalReleaseComObject(SheetcopySmetaOne);
-            containCopySmeta[numSmeta].Close(true, misValue, misValue);
-            Marshal.FinalReleaseComObject(containCopySmeta[numSmeta]);
+            copySmeta.Close(true, misValue, misValue);
+            Marshal.FinalReleaseComObject(copySmeta);
         }
     }
 }
