@@ -355,8 +355,8 @@ namespace ConsoleApp3
             Excel.Range cellforDaysSimilarSize = workSheetGrafik.get_Range("G5", LastCellGrafik);
             cellforDaysSimilarSize.ColumnWidth = 4;
             Excel.Range rangeForColour = workSheetGrafik.get_Range("E6", LastCellGrafik);
-            int AmountofDaysOnEachRazdel, AmountofWorkerOnEachRazdel;
-            int AmountofDaysOnAllRazdel = 0, summaAmountofDaysEachWork = 0, summaAmountofWorkerEachWork = 0, indexofRazdel = 0;
+            int AmountOfDaysOnEachRazdel, AmountofWorkerOnEachRazdel;
+            int AmountOfDaysOnAllRazdel = 0, summaAmountofDaysEachWork = 0, summaAmountofWorkerEachWork = 0, indexofRazdel = 0;
             Console.WriteLine(FirstCellGrafik.Row + amountOfWorkinRazdel + 1);
             Console.WriteLine(lastMonth.Column);
             for (int j = rangeForColour.Row; j < rangeForColour.Rows.Count + rangeForColour.Row; j++)
@@ -367,8 +367,8 @@ namespace ConsoleApp3
                     {
                         indexofRazdel++;
                         Excel.Range amountofDaysEachRazdelTabl = workSheetGrafik.Cells[numRazdelTablExcelGrafik[indexofRazdel - 1], 6];
-                        AmountofDaysOnEachRazdel = (int)(amountofDaysEachRazdelTabl.Value2);
-                        AmountofDaysOnAllRazdel += AmountofDaysOnEachRazdel;
+                        AmountOfDaysOnEachRazdel = (int)(amountofDaysEachRazdelTabl.Value2);
+                        AmountOfDaysOnAllRazdel += AmountOfDaysOnEachRazdel;
                     }
                 }
                 if (indexofRazdel > 0)
@@ -398,7 +398,7 @@ namespace ConsoleApp3
                             rangeFillColour.Interior.ColorIndex = 10;
                             summaAmountofDaysEachWork += (int)(numberofDaysEachWorkTabl.Value2);
                             //Console.WriteLine("before er=" + er + " sk " + skoldni);
-                            if (summaAmountofDaysEachWork > AmountofDaysOnAllRazdel) summaAmountofDaysEachWork -= 1; //бригада переходит на следующие работы в тот же день 
+                            if (summaAmountofDaysEachWork > AmountOfDaysOnAllRazdel) summaAmountofDaysEachWork -= 1; //бригада переходит на следующие работы в тот же день 
                             //Console.WriteLine("after er=" + er + " sk " + skoldni);
                             //Console.WriteLine(j + "er=" + er + " s " + s);
                             summaAmountofWorkerEachWork -= AmountofWorkerOnEachRazdel;
