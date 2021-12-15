@@ -7,73 +7,86 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Excel = Microsoft.Office.Interop.Excel;
 
-namespace ConsoleApp3
+namespace ExcelEditor.bl
 {
     public class Tehnadzor : Worker
     {
         public Tehnadzor() : base()
         { }
-        protected override void ProcessSmeta(List<Excel.Workbook> listAktKStoOneSmeta, Excel.Worksheet sheetCopySmeta, RangeFile processingArea, string adresSmeta)
+        protected override void ProcessSmeta(List<Excel.Workbook> listAktKStoOneSmeta, Excel.Workbook copySmeta, RangeFile processingArea, string adresSmeta,int size,ref string _textError)
         {
-            //Console.WriteLine("ProcessSmeta tehnadzor");
-            try
-            {     
-                Excel.Range rangeSmetaOne = sheetCopySmeta.get_Range(processingArea.FirstCell, processingArea.LastCell);
-                Excel.Range keyCellNumberPozSmeta = rangeSmetaOne.Find("№ пп");
-                Excel.Range keyCellConstructWorkSmeta = rangeSmetaOne.Find("Кол.");
+            object misValue;
+            Excel.Worksheet sheetCopySmeta = copySmeta.Sheets[1];
+            Excel.Range rangeSmetaOne = sheetCopySmeta.get_Range(processingArea.FirstCell, processingArea.LastCell);
+            Excel.Range keyCellNumberPozSmeta = rangeSmetaOne.Find("№ пп");
+            Excel.Range keyCellConstructWorkSmeta = rangeSmetaOne.Find("Кол.");
+            if (keyCellNumberPozSmeta != null && keyCellConstructWorkSmeta != null)
+            {
                 int nextInsertColumn = keyCellConstructWorkSmeta.Column + 1;
                 int lastRowCellsAfterDelete = 0;
-                ParserExc.DeleteColumnandRow(sheetCopySmeta, rangeSmetaOne, keyCellNumberPozSmeta, adresSmeta, ref lastRowCellsAfterDelete);
+                ParserExc.DeleteColumnandRow(sheetCopySmeta, rangeSmetaOne, keyCellNumberPozSmeta, adresSmeta, ref _textError, ref lastRowCellsAfterDelete);
                 Console.WriteLine(lastRowCellsAfterDelete);
                 Excel.Range newLastCell = sheetCopySmeta.Cells[lastRowCellsAfterDelete, rangeSmetaOne.Columns.Count];
                 rangeSmetaOne = sheetCopySmeta.get_Range(keyCellNumberPozSmeta, newLastCell);//уменьшение области обработки 
-                List<Excel.Workbook> aktKSinOrderSort = SortAktKSforTehnadzor(listAktKStoOneSmeta);
+                List<Excel.Workbook> aktKSinOrderSort = SortAktKSforTehnadzor(listAktKStoOneSmeta, ref _textError);
                 List<Dictionary<int, double>> forRecordWorkColumnInSmeta = new List<Dictionary<int, double>>();
                 string[] nameAktKSRecordColumn = new string[aktKSinOrderSort.Count];
+                string error = null;
                 if (aktKSinOrderSort.Count != 0)
                 {
                     Parallel.For(0, aktKSinOrderSort.Count, numKS =>
-                      {
-                          //Console.WriteLine(Task.CurrentId + "начал  работу");
-                          Dictionary<int, double> totalScopeWorkAktKSone = new Dictionary<int, double>();
-                          Excel.Worksheet workSheetAktKS = aktKSinOrderSort[numKS].Sheets[1];
-                          Excel.Range rangeAktKS = workSheetAktKS.get_Range(processingArea.FirstCell, processingArea.LastCell);
-                          string nameAktKS = null;
-                          WorkWithAktKSTehnadzor(workSheetAktKS, rangeAktKS, aktKSinOrderSort[numKS].FullName, ref nameAktKS, ref totalScopeWorkAktKSone);
-                          forRecordWorkColumnInSmeta.Add(totalScopeWorkAktKSone);
-                          nameAktKSRecordColumn[numKS] = nameAktKS;
-                          Marshal.FinalReleaseComObject(rangeAktKS);
-                          Marshal.FinalReleaseComObject(workSheetAktKS);
-                          //Console.WriteLine(Task.CurrentId + "завершил  работу");
-                      });
+                    {
+                        Dictionary<int, double> totalScopeWorkAktKSone = new Dictionary<int, double>();
+                        Excel.Worksheet workSheetAktKS = aktKSinOrderSort[numKS].Sheets[1];
+                        Excel.Range rangeAktKS = workSheetAktKS.get_Range(processingArea.FirstCell, processingArea.LastCell);
+                        string nameAktKS = null;
+                        WorkWithAktKSTehnadzor(workSheetAktKS, rangeAktKS, aktKSinOrderSort[numKS].FullName, ref error, ref nameAktKS, ref totalScopeWorkAktKSone);
+                        forRecordWorkColumnInSmeta.Add(totalScopeWorkAktKSone);
+                        nameAktKSRecordColumn[numKS] = nameAktKS;
+                        Marshal.FinalReleaseComObject(rangeAktKS);
+                        Marshal.FinalReleaseComObject(workSheetAktKS);
+                    });
                     for (int numKS = 0; numKS < listAktKStoOneSmeta.Count; numKS++)
                     {
-                        object misValue = System.Reflection.Missing.Value;
+                        misValue = System.Reflection.Missing.Value;
                         listAktKStoOneSmeta[numKS].Close(false, misValue, misValue);
                     }
                 }
-                RecordFileTehnadzor(sheetCopySmeta, rangeSmetaOne, forRecordWorkColumnInSmeta,nameAktKSRecordColumn, ref nextInsertColumn, adresSmeta);
-                FormatRecordCopySmeta(sheetCopySmeta, rangeSmetaOne, adresSmeta);
+                _textError += error;
+                RecordFileTehnadzor(sheetCopySmeta, rangeSmetaOne, forRecordWorkColumnInSmeta, nameAktKSRecordColumn, ref nextInsertColumn, ref _textError, adresSmeta);
+                FormatRecordCopySmeta(sheetCopySmeta, rangeSmetaOne, adresSmeta, size, ref _textError);
                 if (aktKSinOrderSort.Count != 0)
                 {
                     RecordFormulaTehnadzor(sheetCopySmeta, rangeSmetaOne, keyCellConstructWorkSmeta, nextInsertColumn);
                     ZeroMinValue(sheetCopySmeta, rangeSmetaOne, nextInsertColumn);
-                }       
+                }
+                misValue = System.Reflection.Missing.Value;
+                Marshal.FinalReleaseComObject(rangeSmetaOne);
+                Marshal.FinalReleaseComObject(sheetCopySmeta);
+                copySmeta.Close(true, misValue, misValue);
+                Marshal.FinalReleaseComObject(copySmeta);
             }
-            catch (NullReferenceException ex)
+            else
             {
-                Console.WriteLine($"{ex.Message} Проверьте чтобы в {adresSmeta} было верно записано устойчивое выражение [№ пп] или [Кол.]");
-            }     
+                misValue = System.Reflection.Missing.Value;
+                for (int numKS = 0; numKS < listAktKStoOneSmeta.Count; numKS++)
+                {
+                    listAktKStoOneSmeta[numKS].Close(false, misValue, misValue);
+                }
+                Marshal.FinalReleaseComObject(sheetCopySmeta);
+                copySmeta.Close(true, misValue, misValue);
+                Marshal.FinalReleaseComObject(copySmeta);
+                throw new NullvalueException($" Проверьте чтобы в {adresSmeta} было верно записано устойчивое выражение [№ пп] или [Кол.]\n");
+            }        
         }
 
         //метод возврашает строку - наименование столбца выполненных объемов работ по КС-2 за определенный период и заполняет словарь
         //где ключ -номер позиции по смете из Актов КС, значение выполнение по смете
-        private void WorkWithAktKSTehnadzor(Excel.Worksheet workSheetAktKS, Excel.Range rangeAktKS, string adresKs, ref string nameAktKS,ref Dictionary<int, double> totalScopeWorkAktKSone)
-        {
-            //Console.WriteLine("WorkWithAktKSTehnadzor");
-            nameAktKS = "Акт КС-2 №";
+        private void WorkWithAktKSTehnadzor(Excel.Worksheet workSheetAktKS, Excel.Range rangeAktKS, string adresKs, ref string error,ref string nameAktKS, ref Dictionary<int, double> totalScopeWorkAktKSone)
+        {          
             try
             {
+                nameAktKS = "Акт КС-2 №";
                 RegexReg regul = new RegexReg();
                 Excel.Range keyNumPozpoSmeteinAktKS = rangeAktKS.Find("по смете");
                 Excel.Range keyscopeWorkinAktKS = ParserExc.FindCellOfRegul(workSheetAktKS, rangeAktKS, regul.scopeWorkInAktKS);
@@ -89,35 +102,38 @@ namespace ConsoleApp3
                         string monthAktKS = ParserExc.FindDateAktKS(regul.regexMonth, findCellDatAktKS);
                         string monthAktKSpropis = ParserExc.MonthLetter(monthAktKS);
                         nameAktKS += $" {findCellNumAktKS.Value.ToString()} {monthAktKSpropis}{yearAktKS} ";
-                        totalScopeWorkAktKSone = ParserExc.GetScopeWorkAktKSone(workSheetAktKS, rangeAktKS, keyNumPozpoSmeteinAktKS, keyscopeWorkinAktKS, adresKs);
+                        totalScopeWorkAktKSone = ParserExc.GetScopeWorkAktKSone(workSheetAktKS, rangeAktKS, keyNumPozpoSmeteinAktKS, keyscopeWorkinAktKS, adresKs,ref error);
                     }
                     else
                     {
-                        Console.WriteLine($" Проверьте чтобы в {adresKs} было верно записано устойчивое выражение [Номер документа] или [Дата составления]");
-                        return;
+                        throw new NullvalueException($" Проверьте чтобы в {adresKs} было верно записано устойчивое выражение [Номер документа] или [Дата составления]\n");
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"Проверьте чтобы в {adresKs} было верно записано устойчивое выражение [по смете] или [за отчетный|(К|к)оличество]");
+                    throw new NullvalueException($"Проверьте чтобы в {adresKs} было верно записано устойчивое выражение [по смете] или [за отчетный|(К|к)оличество]\n");
                 }
             }
-            catch (NullReferenceException ex)
+            catch (COMException ex)
             {
-                Console.WriteLine($"{ex.Message} Проверьте чтобы в {adresKs} было верно записано устойчивое выражение [Номер документа] или [Дата составления]");
+                error += $"{ex.Message} Проверьте чтобы в {adresKs} было верно записано устойчивое выражение [Номер документа] или [Дата составления] или  [по смете] или [за отчетный|(К|к)оличество] \n";
+            }
+            catch (NullvalueException ex)
+            {
+                error += $"{ex.parName}";
             }
         }
 
         //метод записывает в файл копии сметы объемы из Актов КС-2, каждый месяц в новый столбец,
         //вставка столбцов идет за столбцом объемы по смете  
-        private void RecordFileTehnadzor(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, List<Dictionary<int, double>> forRecordWorkColumninSmeta,string[] nameAktKSRecordColumn,ref int nextInsertColumn, string adresSmeta)
+        private void RecordFileTehnadzor(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, List<Dictionary<int, double>> forRecordWorkColumninSmeta, string[] nameAktKSRecordColumn, ref int nextInsertColumn, ref string _textError, string adresSmeta)
         {
             //Console.WriteLine(" RecordFileTehnadzor");
             int pozSmeta;
-            for (int i = 0; i < forRecordWorkColumninSmeta.Count ; i++)
+            for (int i = 0; i < forRecordWorkColumninSmeta.Count; i++)
             {
                 ICollection keyCollScopeWorkAktKSone = forRecordWorkColumninSmeta[i].Keys;
-                for (int j = rangeSmetaOne.Row; j < rangeSmetaOne.Rows.Count + rangeSmetaOne.Row+1; j++)
+                for (int j = rangeSmetaOne.Row; j < rangeSmetaOne.Rows.Count + rangeSmetaOne.Row + 1; j++)
                 {
                     Excel.Range cellsNextColumnTablInsert = SheetcopySmetaOne.Cells[j, nextInsertColumn];
                     cellsNextColumnTablInsert.Insert(XlInsertShiftDirection.xlShiftToRight);
@@ -139,7 +155,7 @@ namespace ConsoleApp3
                             }
                             catch (FormatException ex)
                             {
-                                Console.WriteLine($"{ex.Message} Вы ввели неверный формат для {adresSmeta} в строке {cellsNumPozColumnTabl.Row} в столбце {cellsNumPozColumnTabl.Column}(не должно быть [.,букв], только целые числа ");
+                                 _textError+= $"{ex.Message} Вы ввели неверный формат для {adresSmeta} в строке {cellsNumPozColumnTabl.Row} в столбце {cellsNumPozColumnTabl.Column}(не должно быть [.,букв], только целые числа\n";
                             }
                         }
                     }
@@ -224,7 +240,7 @@ namespace ConsoleApp3
         }
 
         //метод возвращает отсортированный лист книг Иксель, акты КС для сметы
-        private List<Excel.Workbook> SortAktKSforTehnadzor(List<Excel.Workbook>  listAktKStoOneSmeta)
+        private List<Excel.Workbook> SortAktKSforTehnadzor(List<Excel.Workbook> listAktKStoOneSmeta, ref string _textError)
         {
             List<Excel.Workbook> aktKSinOrderSort = new List<Excel.Workbook>();
             try
@@ -248,27 +264,27 @@ namespace ConsoleApp3
                             MatchCollection mathesMonth = reg.regexMonth.Matches(dateVal);
                             MatchCollection mathesYear = reg.regexYear.Matches(dateVal);
                             if (mathesMonth.Count > 0 && mathesYear.Count > 0)
-                            { 
+                            {
                                 foreach (Match month in mathesMonth)
                                 {
-                                   monthAktKS = month.Value;
-                                   monthAktKS = monthAktKS.Remove(monthAktKS.Length - 1, 1);
-                                   monthVal = Convert.ToInt32(monthAktKS);
+                                    monthAktKS = month.Value;
+                                    monthAktKS = monthAktKS.Remove(monthAktKS.Length - 1, 1);
+                                    monthVal = Convert.ToInt32(monthAktKS);
                                 }
                                 foreach (Match year in mathesYear)
                                 {
-                                yearAktKS = year.Value;
-                                yearAktKS = yearAktKS.Remove(0, 1);
-                                yearVal = Convert.ToInt32(yearAktKS);
+                                    yearAktKS = year.Value;
+                                    yearAktKS = yearAktKS.Remove(0, 1);
+                                    yearVal = Convert.ToInt32(yearAktKS);
                                 }
 
-                               int nomercifra = yearVal * 100 + monthVal;
-                               Console.WriteLine(nomercifra + "mon " + monthAktKS + " year " + yearAktKS + " = " + dateVal);
-                               nomercifraList.Add(dateVal, nomercifra);
-                            } 
+                                int nomercifra = yearVal * 100 + monthVal;
+                                //Console.WriteLine(nomercifra + "mon " + monthAktKS + " year " + yearAktKS + " = " + dateVal);
+                                nomercifraList.Add(dateVal, nomercifra);
+                            }
                         }
                     }
-                    if (nomercifraList.Count > 0 )
+                    if (nomercifraList.Count > 0)
                     {
                         int[] valueNomerCifra = nomercifraList.Values.ToArray();
                         string[] keyNomerCifra = nomercifraList.Keys.ToArray();
@@ -306,15 +322,16 @@ namespace ConsoleApp3
                     {
                         if (listAktKStoOneSmeta.Count > 0)
                         {
-                            Console.WriteLine("Так как Вы не указали в названии Актов КС-2 дату в форме мм.гггг, то в итоговой таблице Акты не будут отсортированы по порядку");
+                            _textError+= "Так как Вы не указали в названии Актов КС-2 дату в форме мм.гггг, то в итоговой таблице Акты не будут отсортированы по порядку\n";
                             aktKSinOrderSort = listAktKStoOneSmeta;
                         }
                     }
                 }
-               
-            }catch(NullReferenceException ex)
+
+            }
+            catch (NullReferenceException ex)
             {
-                Console.WriteLine($"{ex.Message} В названии сметы отсутствует символ № перед номером сметы");
+                _textError += $"{ex.Message} В названии сметы отсутствует символ № перед номером сметы\n";
             }
             return aktKSinOrderSort;
         }

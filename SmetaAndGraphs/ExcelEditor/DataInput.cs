@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace ConsoleApp3
+namespace ExcelEditor.bl
 {
-    public class DataVvod
+    public class  DataInput
     {
         public int DayStart { get; set; }
         public int MonthStart { get; set; }

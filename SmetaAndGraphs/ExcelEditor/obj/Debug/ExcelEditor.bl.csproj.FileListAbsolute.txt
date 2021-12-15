@@ -1,0 +1,12 @@
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\bin\Debug\ExcelEditor.dll
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\bin\Debug\ExcelEditor.pdb
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\obj\Debug\ExcelEditor.bl.csproj.CoreCompileInputs.cache
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\obj\Debug\ExcelEditor.dll
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\obj\Debug\ExcelEditor.pdb
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\obj\Debug\ExcelEditor.bl.csproj.ResolveComReference.cache
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\bin\Debug\ExcelEditor.dll.config
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\bin\Debug\EntityFramework.dll
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\bin\Debug\EntityFramework.SqlServer.dll
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\bin\Debug\EntityFramework.xml
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\bin\Debug\EntityFramework.SqlServer.xml
+D:\progCTabl\progCTabl\SmetaAndGraphs\ExcelEditor\obj\Debug\ExcelEditor.bl.csproj.AssemblyReference.cache

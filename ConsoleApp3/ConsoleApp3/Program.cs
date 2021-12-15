@@ -55,12 +55,13 @@ namespace ConsoleApp3
                 RangeFile processingArea = new RangeFile();
                 processingArea.FirstCell = "A1";
                 processingArea.LastCell = "Z1200";
+                long elapsed;
                 switch (selector)
                 {
                     case ChangeMod.expert:
                         {
                             Expert ob = new Expert();
-                            ob.Initialization();
+                            ob.Initialization();                        
                             ob.ProccessAll(processingArea, excelApp);
                             break;
                         }
@@ -73,7 +74,7 @@ namespace ConsoleApp3
                         }
                     case ChangeMod.grafic:
                         {
-                            Grafik ob = new Grafik();
+                            Graph ob = new Graph();
                             ob.InitializationGrafik(excelApp);
                             ob.ProccessGrafik(processingArea, excelApp);
                             break;
@@ -83,7 +84,7 @@ namespace ConsoleApp3
                         break;
                 }
                 stopWatch.Stop();
-                long elapsed = stopWatch.ElapsedMilliseconds; // or sw.ElapsedTicks
+                elapsed = stopWatch.ElapsedMilliseconds; // or sw.ElapsedTicks
                 Console.WriteLine("Total query time: {0} ms", elapsed);
                 excelApp.Quit();
                 //logFileError.Close();

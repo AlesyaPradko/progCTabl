@@ -51,5 +51,9 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-ConsoleApp3/ConsoleApp3/bin
-ConsoleApp3/ConsoleApp3/obj
+ConsoleApp3
+SmetaAndGraphs/SmetaAndGraphs/bin
+SmetaAndGraphs/SmetaAndGraphs/obj
+SmetaAndGraphs/SmetaAndGraphs/Properties
+SmetaAndGraphs/packages
+WpfAppSmetaGraf

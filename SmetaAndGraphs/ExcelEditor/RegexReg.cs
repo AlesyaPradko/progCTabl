@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ConsoleApp3
+namespace ExcelEditor.bl
 {
     public class RegexReg
     {
-        //регулярные выражения, используемые в сметах и актах КС-2
         public Regex scopeWorkInAktKS = new Regex(@"((К|к)оличество|Кол\.)", RegexOptions.IgnoreCase);
         public Regex regexMonth = new Regex(@"\.?(?<month>\d{2})\.", RegexOptions.IgnoreCase);
         public Regex regexYear = new Regex(@"\.(?<year>\d{4})", RegexOptions.IgnoreCase);
