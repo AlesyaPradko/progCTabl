@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
@@ -9,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Data.Entity;
 using Excel = Microsoft.Office.Interop.Excel;
 
-namespace ExcelEditor.bl
+namespace WpfAppSmetaGraf.Model
 {
     public class GraphWork
     {
@@ -27,32 +26,32 @@ namespace ExcelEditor.bl
         public int _monthsForWork;
         public string _graphAdress;
         private Dictionary<int, int> _amounWorkInChapter;
-
+     
         public GraphWork()
         { }
 
         //метод инициализирует листы и словари хранящие в себе сметы (адреса и книги)
-        public void InitializationGrafik(string userOneSmeta/*, string userData*/, string userWhereSave)
+        public void InitializationGraph(string userOneSmeta/*, string userData*/, string userWhereSave)
         {
-            _userSmeta = userOneSmeta;      
-            _graphAdress = userWhereSave;  
+            _userSmeta = userOneSmeta;
+            _graphAdress = userWhereSave;
         }
 
         //метод для работы над папкой со сметами в режиме график
         //работа надсметой для записи графика
-        public void ProccessGrafikFirst(RangeFile processingArea, Excel.Application excelApp, ref string _textError)
+        public void ProccessGraphFirst(RangeFile processingArea, Excel.Application excelApp, ref string _textError)
         {
-                _oneSmeta = excelApp.Workbooks.Open(_userSmeta);
-                _adresSmeta = _oneSmeta.FullName;
-                Excel.Worksheet workSheetSmeta = _oneSmeta.Sheets[1];
-                Excel.Range rangeSmeta = workSheetSmeta.get_Range(processingArea.FirstCell, processingArea.LastCell);
-                Excel.Range cellWithTrudozatrat;
-                cellWithTrudozatrat = rangeSmeta.Find("Сметная трудоемкость");
-                if (cellWithTrudozatrat != null)
-                {
-                    string trudozatrata = cellWithTrudozatrat.Value.ToString();
-                    _trudozatratTotal = ParserExc.NumeralFromCell(trudozatrata, ref _textError);
-                if (_trudozatratTotal !=0)
+            _oneSmeta = excelApp.Workbooks.Open(_userSmeta);
+            _adresSmeta = _oneSmeta.FullName;
+            Excel.Worksheet workSheetSmeta = _oneSmeta.Sheets[1];
+            Excel.Range rangeSmeta = workSheetSmeta.get_Range(processingArea.FirstCell, processingArea.LastCell);
+            Excel.Range cellWithTrudozatrat;
+            cellWithTrudozatrat = rangeSmeta.Find("Сметная трудоемкость");
+            if (cellWithTrudozatrat != null)
+            {
+                string trudozatrata = cellWithTrudozatrat.Value.ToString();
+                _trudozatratTotal = ParserExc.NumeralFromCell(trudozatrata, ref _textError);
+                if (_trudozatratTotal != 0)
                 {
                     Marshal.FinalReleaseComObject(rangeSmeta);
                     Marshal.FinalReleaseComObject(workSheetSmeta);
@@ -60,46 +59,46 @@ namespace ExcelEditor.bl
                 else throw new NullValueException($"Проверьте чтобы в {_adresSmeta} было верно значение Сметной трудоемкости]\n");
 
             }
-                else
-                {
-                    object misValue = System.Reflection.Missing.Value;
-                    Marshal.FinalReleaseComObject(rangeSmeta);
-                    Marshal.FinalReleaseComObject(workSheetSmeta);
-                    _oneSmeta.Close(false, misValue, misValue);
-                    Marshal.FinalReleaseComObject(_oneSmeta);
-                    throw new NullValueException($"Проверьте чтобы в {_adresSmeta} было верно записано устойчивое выражение  [Сметная трудоемкость]\n");               
-                }         
+            else
+            {
+                object misValue = System.Reflection.Missing.Value;
+                Marshal.FinalReleaseComObject(rangeSmeta);
+                Marshal.FinalReleaseComObject(workSheetSmeta);
+                _oneSmeta.Close(false, misValue, misValue);
+                Marshal.FinalReleaseComObject(_oneSmeta);
+                throw new NullValueException($"Проверьте чтобы в {_adresSmeta} было верно записано устойчивое выражение  [Сметная трудоемкость]\n");
+            }
         }
-           
 
-        public void ProccessGrafik(RangeFile processingArea, Excel.Application excelApp, ref string _textError)
+
+        public void ProccessGraph(RangeFile processingArea, Excel.Application excelApp, ref string _textError)
         {
             try
-            {             
+            {
                 Excel.Worksheet workSheetSmeta = _oneSmeta.Sheets[1];
                 Excel.Range rangeSmeta = workSheetSmeta.get_Range(processingArea.FirstCell, processingArea.LastCell);
                 Excel.Range keyCellNumberPozSmeta = rangeSmeta.Find("№ пп");
                 Excel.Range keyCellColumnTrudozatrat = rangeSmeta.Find("Т/з осн. раб. Всего");
-                if (keyCellNumberPozSmeta != null && keyCellColumnTrudozatrat != null )
-                { 
+                if (keyCellNumberPozSmeta != null && keyCellColumnTrudozatrat != null)
+                {
                     _onChapterTrudozatrat = ParserExc.FindForChapter(workSheetSmeta, rangeSmeta, keyCellColumnTrudozatrat, keyCellNumberPozSmeta);
                     _cellsAllChapter = ParserExc.FindChapter(workSheetSmeta, rangeSmeta, keyCellNumberPozSmeta);
-                    _startChapter = GetFirstPosChapter(workSheetSmeta,ref _textError);
+                    _startChapter = GetFirstPosChapter(workSheetSmeta, ref _textError);
                     _amounWorkInChapter = new Dictionary<int, int>();
                     List<int> deleteChapter = new List<int>();
-                    _chelChasForEachWork = ChelChasForWorks(workSheetSmeta, rangeSmeta, keyCellNumberPozSmeta, keyCellColumnTrudozatrat, _adresSmeta, ref deleteChapter,ref _textError);
+                    _chelChasForEachWork = ChelChasForWorks(workSheetSmeta, rangeSmeta, keyCellNumberPozSmeta, keyCellColumnTrudozatrat, _adresSmeta, ref deleteChapter, ref _textError);
                     if (_cellsAllChapter.Count > deleteChapter.Count)
                     {
-                        GetTakeNewAllRazdel(deleteChapter, ref _startChapter, ref _cellsAllChapter);
+                        GetTakeNewAllChapter(deleteChapter, ref _startChapter, ref _cellsAllChapter);
                     }
-                    _nameForEachWorkinSmeta = NameWorkInPozSmeta(workSheetSmeta, rangeSmeta, keyCellNumberPozSmeta, _adresSmeta, ref _amounWorkInChapter,ref _textError);
+                    _nameForEachWorkinSmeta = NameWorkInPozSmeta(workSheetSmeta, rangeSmeta, keyCellNumberPozSmeta, _adresSmeta, ref _amounWorkInChapter, ref _textError);
                     int[] startChapterWithWork = _amounWorkInChapter.Keys.ToArray();
                     if (_onChapterTrudozatrat.Count < _cellsAllChapter.Count)
                     {
                         throw new NullValueException("Проверьте написание Итого по разделу");
                     }
                     string nameSmeta;
-                    int smetaId=0;
+                    int smetaId = 0;
                     List<string> ChapterAll = new List<string>();
                     List<string> forChapterlAll = new List<string>();
                     using (AllContext db = new AllContext())
@@ -112,11 +111,11 @@ namespace ExcelEditor.bl
                         {
                             nameSmeta = detail.NameSmeta;
                             smetaId = detail.Id;
-                            break;                          
+                            break;
                         }
                         var orderChap =
                         from details in db.Graphs
-                        where details.TableId==smetaId
+                        where details.TableId == smetaId
                         select details;
                         foreach (var detail in orderChap)
                         {
@@ -151,9 +150,9 @@ namespace ExcelEditor.bl
                         }
                     }
                     Marshal.FinalReleaseComObject(rangeSmeta);
-                    Marshal.FinalReleaseComObject(workSheetSmeta);                 
-                   
-                }    
+                    Marshal.FinalReleaseComObject(workSheetSmeta);
+
+                }
                 else
                 {
                     _textError += $"Проверьте чтобы в {_adresSmeta} было верно записано устойчивое выражение [№ пп] или [Кол.] или [Т / з осн.раб.Всего]\n";
@@ -179,7 +178,7 @@ namespace ExcelEditor.bl
             }
         }
         //меняет листы с первыми позициями раздела и листы с ячейками разделов, остаются только те разделы, где есть работа
-        private void GetTakeNewAllRazdel(List<int> deleteChapter, ref List<int> _startChapter, ref List<Excel.Range> _cellsAllRazdel)
+        private void GetTakeNewAllChapter(List<int> deleteChapter, ref List<int> _startChapter, ref List<Excel.Range> _cellsAllRazdel)
         {
             for (int i = _startChapter.Count - 1; i >= 0; i--)
             {
@@ -202,8 +201,8 @@ namespace ExcelEditor.bl
         private List<List<string>> GetListForRegex(List<string> forRazdelAll)
         {
             List<List<string>> forRazdelAllForRegex = new List<List<string>>();
-           
-            for (int i=0;i< forRazdelAll.Count;i++)
+
+            for (int i = 0; i < forRazdelAll.Count; i++)
             {
                 string test = forRazdelAll[i];
                 List<string> Test = new List<string>();
@@ -214,7 +213,7 @@ namespace ExcelEditor.bl
                     {
                         word += test[j];
                     }
-                    else 
+                    else
                     {
                         Test.Add(word);
                         word = null;
@@ -249,11 +248,11 @@ namespace ExcelEditor.bl
             }
             catch (FormatException exc)
             {
-                _textError+=$"{exc.Message} Проверьте первый столбец и первые строки после разделов\n";
+                _textError += $"{exc.Message} Проверьте первый столбец и первые строки после разделов\n";
             }
             return startChapter;
         }
-   
+
         public int GetMinDays()
         {
             int inputDaysMin = (int)(0.025 * _trudozatratTotal / 8);
@@ -265,6 +264,8 @@ namespace ExcelEditor.bl
             int inputDaysMax = (int)(0.13 * _trudozatratTotal / 8);
             return inputDaysMax;
         }
+
+       
         public int GetMinPeople()
         {
             int inputWorkersMin = (int)(0.03 * _trudozatratTotal / 8);
@@ -297,21 +298,21 @@ namespace ExcelEditor.bl
             double deltaLessThenOne;
             daysForWork = (int)(_trudozatratTotal / (amountWorkers * 8));
             deltaLessThenOne = (_trudozatratTotal / (amountWorkers * 8)) - daysForWork;
-            if (deltaLessThenOne > 0.05) daysForWork +=2;
+            if (deltaLessThenOne > 0.05) daysForWork += 2;
             else daysForWork += 1;
         }
-                   
+
 
 
         //возвращает строку из файла содержащего все выходные дни с 1999 по 2025 г, строку искомого месяца
-        private  string FindDayMonths(DataInput dataStartWork)
+        private string FindDayMonths(DataInput dataStartWork)
         {
-            string findYearString=null;
+            string findYearString = null;
             using (AllContext db = new AllContext())
             {
                 var orderDetails =
                 from details in db.Days
-                where details.Year== dataStartWork.YearStart.ToString()
+                where details.Year == dataStartWork.YearStart.ToString()
                 select details;
                 foreach (var detail in orderDetails)
                 {
@@ -418,7 +419,7 @@ namespace ExcelEditor.bl
             return amountDaysinMonth;
         }
         //меняет по ссылке словарь, состоящий из строки формата месяц, год и листа из рабочих дней
-        public  Dictionary<string, List<int>> GetDaysForWork(DataInput dataStartWork, int daysForWork)
+        public Dictionary<string, List<int>> GetDaysForWork(DataInput dataStartWork, int daysForWork)
         {
 
             List<int> workDaysinMonth;
@@ -441,14 +442,14 @@ namespace ExcelEditor.bl
                     {
                         dataStartWork.MonthStart += 1;
                         amountDaysInMonth = GetDaysInMonth(dataStartWork);
-                        freeDaysInMonthLetter = FindDayMonths( dataStartWork);
+                        freeDaysInMonthLetter = FindDayMonths(dataStartWork);
                     }
                     else
                     {
                         dataStartWork.MonthStart = 1;
                         dataStartWork.YearStart += 1;
                         amountDaysInMonth = GetDaysInMonth(dataStartWork);
-                        freeDaysInMonthLetter = FindDayMonths( dataStartWork);
+                        freeDaysInMonthLetter = FindDayMonths(dataStartWork);
                     }
                     workDaysinMonth = GetWorksDays(freeDaysInMonthLetter, 1, amountDaysInMonth, daysForWork);
                     monthAndYearForGrafik = $"{ParserExc.MonthLetterInt(dataStartWork.MonthStart)}.{ dataStartWork.YearStart.ToString()}";
@@ -456,7 +457,7 @@ namespace ExcelEditor.bl
                 dayOnEachWork.Add(monthAndYearForGrafik, workDaysinMonth);
                 daysForWork -= workDaysinMonth.Count;
                 if (daysForWork <= 0) break;
-            }       
+            }
 
             return dayOnEachWork;
         }
@@ -547,11 +548,11 @@ namespace ExcelEditor.bl
 
 
         //возвращает  словарь, где ключ - номер по смете, значение - трудозатраты на данную работу
-        private Dictionary<int, double> ChelChasForWorks(Excel.Worksheet workSheetSmeta, Excel.Range rangeSmeta, Excel.Range keyCellNumberPosSmeta, Excel.Range keyCellColumnTopTrudozatrat, string AdresSmeta, ref List<int> deleteChapter,ref string _textError)
+        private Dictionary<int, double> ChelChasForWorks(Excel.Worksheet workSheetSmeta, Excel.Range rangeSmeta, Excel.Range keyCellNumberPosSmeta, Excel.Range keyCellColumnTopTrudozatrat, string AdresSmeta, ref List<int> deleteChapter, ref string _textError)
         {
             Dictionary<int, double> chelChasforEachWork = new Dictionary<int, double>();
             double trudozatratOfWork;
-            int numPosSmeta; 
+            int numPosSmeta;
             for (int j = keyCellNumberPosSmeta.Row + 4; j <= rangeSmeta.Rows.Count; j++)
             {
                 Excel.Range cellsNumberPosColumnTabl = workSheetSmeta.Cells[j, keyCellNumberPosSmeta.Column];
@@ -565,7 +566,7 @@ namespace ExcelEditor.bl
                         trudozatratOfWork = Convert.ToDouble(cellsColumnTrudozatrat.Value2);
                         chelChasforEachWork.Add(numPosSmeta, trudozatratOfWork);
                         for (int i = 0; i < _startChapter.Count; i++)
-                        {                          
+                        {
                             if (_startChapter[i] == numPosSmeta)
                             {
                                 deleteChapter.Add(i);
@@ -575,7 +576,7 @@ namespace ExcelEditor.bl
                     }
                     catch (NullReferenceException ex)
                     {
-                        _textError+=$"{ex.Message} Проверьте чтобы в {AdresSmeta} было верно записано устойчивое выражение [Наименование]\n";
+                        _textError += $"{ex.Message} Проверьте чтобы в {AdresSmeta} было верно записано устойчивое выражение [Наименование]\n";
                     }
                     catch (ArgumentException ex)
                     {
@@ -583,7 +584,7 @@ namespace ExcelEditor.bl
                     }
                     catch (FormatException ex)
                     {
-                        _textError+=$"{ex.Message} Вы ввели неверный формат для {AdresSmeta} в строке {cellsNumberPosColumnTabl.Row} в столбце {cellsNumberPosColumnTabl.Column}(не должно быть [., букв], только целые числа,или в столбце {cellsColumnTrudozatrat.Column} только числа дробные, не должно быть [.букв]  )\n";
+                        _textError += $"{ex.Message} Вы ввели неверный формат для {AdresSmeta} в строке {cellsNumberPosColumnTabl.Row} в столбце {cellsNumberPosColumnTabl.Column}(не должно быть [., букв], только целые числа,или в столбце {cellsColumnTrudozatrat.Column} только числа дробные, не должно быть [.букв]  )\n";
                     }
                 }
             }
@@ -725,134 +726,135 @@ namespace ExcelEditor.bl
         //закрашивает график в соответствие с данными
         public void RecordGraph(Excel.Application excelApp, DataInput dataStartWork, int daysForWork, int numberofWorkers, int color, ref string _textError)
         {
-           try { 
+            try
+            {
                 string nameFailSmeta;
-            ParserExc.GetNameSmeta(_adresSmeta, out nameFailSmeta);
-            _graphAdress += $"\\График производства работ - {nameFailSmeta}";
-            ///Excel.Worksheet workSheetSmeta = _oneSmeta.Sheets[1];
-            Excel.Workbook workBookGraph = excelApp.Workbooks.Add();
-            Excel.Worksheet workSheetGraph = (Excel.Worksheet)workBookGraph.Worksheets.get_Item(1);
-            Excel.Range FirstCellGraph = workSheetGraph.Range["B4"];
-            Excel.Range GraphNext = workSheetGraph.get_Range("B4", "B5");
-            GraphNext.Merge();
-            GraphNext.Value = "№";
-            GraphNext = workSheetGraph.get_Range("C4", "C5");
-            GraphNext.Merge();
-            GraphNext.Value = "Наименование работ";
-            GraphNext = workSheetGraph.get_Range("D4", "D5");
-            GraphNext.Merge();
-            GraphNext.Value = "Всего чел/час";
-            GraphNext = workSheetGraph.get_Range("E4", "E5");
-            GraphNext.Merge();
-            GraphNext.Value = "Кол. чел.  бр";
-            GraphNext = workSheetGraph.get_Range("F4", "F5");
-            GraphNext.Merge();
-            GraphNext.Value = "Кол-во рабоч. дней";
-            Excel.Range firstMonth, lastMonth = null;
-            double delta = (daysForWork / 21.0) - (int)(daysForWork / 21);
-            if (delta < 0.04) _monthsForWork = daysForWork / 21;
-            else _monthsForWork = 1 + daysForWork / 21;
-            _dayOnEachWork = GetDaysForWork(dataStartWork, daysForWork);
-            List<int>[] valueAllWorkDaysForMonth = _dayOnEachWork.Values.ToArray();
-            string[] keyNameDataWork = _dayOnEachWork.Keys.ToArray();
-            for (int i = 0; i < valueAllWorkDaysForMonth.Length; i++)
-            {
-                firstMonth = workSheetGraph.Cells[GraphNext.Row, GraphNext.Column + 1];
-                lastMonth = workSheetGraph.Cells[GraphNext.Row, GraphNext.Column + valueAllWorkDaysForMonth[i].Count];
-                for (int j = 0; j < valueAllWorkDaysForMonth[i].Count; j++)
-                {
-                    workSheetGraph.Cells[firstMonth.Row + 1, firstMonth.Column + j] = valueAllWorkDaysForMonth[i][j];
-                }
-                GraphNext = workSheetGraph.get_Range(firstMonth, lastMonth);
+                ParserExc.GetNameSmeta(_adresSmeta, out nameFailSmeta);
+                _graphAdress += $"\\График производства работ - {nameFailSmeta}";
+                ///Excel.Worksheet workSheetSmeta = _oneSmeta.Sheets[1];
+                Excel.Workbook workBookGraph = excelApp.Workbooks.Add();
+                Excel.Worksheet workSheetGraph = (Excel.Worksheet)workBookGraph.Worksheets.get_Item(1);
+                Excel.Range FirstCellGraph = workSheetGraph.Range["B4"];
+                Excel.Range GraphNext = workSheetGraph.get_Range("B4", "B5");
                 GraphNext.Merge();
-                GraphNext.Value = keyNameDataWork[i];
-                GraphNext = lastMonth;
-            }
-            
-            int amountOfWorkInChapter = 0;
-            int[] numChapterTablExcelGraph = new int[_allChapterInOrder.Count];
-            int[] amountOfWorkersInChapter= new int[_allChapterInOrder.Count]; ;
-            RecordAllString( numberofWorkers, workSheetGraph, ref amountOfWorkInChapter, ref numChapterTablExcelGraph,ref amountOfWorkersInChapter);
-            Excel.Range LastCellGraph = workSheetGraph.Cells[FirstCellGraph.Row + amountOfWorkInChapter + 1, lastMonth.Column];
-            Excel.Range rangeGraph = workSheetGraph.get_Range(FirstCellGraph, LastCellGraph);
-            rangeGraph.Cells.Borders.Weight = Excel.XlBorderWeight.xlMedium;
-            rangeGraph.EntireColumn.Font.Size = 10;
-            rangeGraph.EntireColumn.HorizontalAlignment = Excel.Constants.xlCenter;
-            rangeGraph.EntireColumn.VerticalAlignment = Excel.Constants.xlCenter;
-            rangeGraph.EntireColumn.AutoFit();
-            Excel.Range cellforDaysSimilarSize = workSheetGraph.get_Range("G5", LastCellGraph);
-            cellforDaysSimilarSize.ColumnWidth = 4;
-            Excel.Range rangeForColour = workSheetGraph.get_Range("E6", LastCellGraph);
-            int amountOfDaysOnEachChapter, amountofWorkerOnEachChapter;
-            double deltaWorker = 0;
-            double allWorker, sumAllWork = 0;
-            int amountOfDaysOnAllChapter = 0, summaAmountofDaysEachWork = 0, summaAmountofWorkerEachWork = 0, indexofChapter = 0;
-            for (int j = rangeForColour.Row; j < rangeForColour.Rows.Count + rangeForColour.Row; j++)
-            {
-                if (indexofChapter < numChapterTablExcelGraph.Length)
+                GraphNext.Value = "№";
+                GraphNext = workSheetGraph.get_Range("C4", "C5");
+                GraphNext.Merge();
+                GraphNext.Value = "Наименование работ";
+                GraphNext = workSheetGraph.get_Range("D4", "D5");
+                GraphNext.Merge();
+                GraphNext.Value = "Всего чел/час";
+                GraphNext = workSheetGraph.get_Range("E4", "E5");
+                GraphNext.Merge();
+                GraphNext.Value = "Кол. чел.  бр";
+                GraphNext = workSheetGraph.get_Range("F4", "F5");
+                GraphNext.Merge();
+                GraphNext.Value = "Кол-во рабоч. дней";
+                Excel.Range firstMonth, lastMonth = null;
+                double delta = (daysForWork / 21.0) - (int)(daysForWork / 21);
+                if (delta < 0.04) _monthsForWork = daysForWork / 21;
+                else _monthsForWork = 1 + daysForWork / 21;
+                _dayOnEachWork = GetDaysForWork(dataStartWork, daysForWork);
+                List<int>[] valueAllWorkDaysForMonth = _dayOnEachWork.Values.ToArray();
+                string[] keyNameDataWork = _dayOnEachWork.Keys.ToArray();
+                for (int i = 0; i < valueAllWorkDaysForMonth.Length; i++)
                 {
-                    if (j == numChapterTablExcelGraph[indexofChapter])
+                    firstMonth = workSheetGraph.Cells[GraphNext.Row, GraphNext.Column + 1];
+                    lastMonth = workSheetGraph.Cells[GraphNext.Row, GraphNext.Column + valueAllWorkDaysForMonth[i].Count];
+                    for (int j = 0; j < valueAllWorkDaysForMonth[i].Count; j++)
                     {
-                        indexofChapter++;
-                        Excel.Range amountofDaysEachRazdelTabl = workSheetGraph.Cells[numChapterTablExcelGraph[indexofChapter - 1], 6];
-                        amountOfDaysOnEachChapter = (int)(amountofDaysEachRazdelTabl.Value2);
-                        amountOfDaysOnAllChapter += amountOfDaysOnEachChapter;
+                        workSheetGraph.Cells[firstMonth.Row + 1, firstMonth.Column + j] = valueAllWorkDaysForMonth[i][j];
                     }
+                    GraphNext = workSheetGraph.get_Range(firstMonth, lastMonth);
+                    GraphNext.Merge();
+                    GraphNext.Value = keyNameDataWork[i];
+                    GraphNext = lastMonth;
                 }
-                if (indexofChapter > 0)
+
+                int amountOfWorkInChapter = 0;
+                int[] numChapterTablExcelGraph = new int[_allChapterInOrder.Count];
+                int[] amountOfWorkersInChapter = new int[_allChapterInOrder.Count]; ;
+                RecordAllString(numberofWorkers, workSheetGraph, ref amountOfWorkInChapter, ref numChapterTablExcelGraph, ref amountOfWorkersInChapter);
+                Excel.Range LastCellGraph = workSheetGraph.Cells[FirstCellGraph.Row + amountOfWorkInChapter + 1, lastMonth.Column];
+                Excel.Range rangeGraph = workSheetGraph.get_Range(FirstCellGraph, LastCellGraph);
+                rangeGraph.Cells.Borders.Weight = Excel.XlBorderWeight.xlMedium;
+                rangeGraph.EntireColumn.Font.Size = 10;
+                rangeGraph.EntireColumn.HorizontalAlignment = Excel.Constants.xlCenter;
+                rangeGraph.EntireColumn.VerticalAlignment = Excel.Constants.xlCenter;
+                rangeGraph.EntireColumn.AutoFit();
+                Excel.Range cellforDaysSimilarSize = workSheetGraph.get_Range("G5", LastCellGraph);
+                cellforDaysSimilarSize.ColumnWidth = 4;
+                Excel.Range rangeForColour = workSheetGraph.get_Range("E6", LastCellGraph);
+                int amountOfDaysOnEachChapter, amountofWorkerOnEachChapter;
+                double deltaWorker = 0;
+                double allWorker, sumAllWork = 0;
+                int amountOfDaysOnAllChapter = 0, summaAmountofDaysEachWork = 0, summaAmountofWorkerEachWork = 0, indexofChapter = 0;
+                for (int j = rangeForColour.Row; j < rangeForColour.Rows.Count + rangeForColour.Row; j++)
                 {
-                    if (j >= numChapterTablExcelGraph[indexofChapter - 1] + 1)
+                    if (indexofChapter < numChapterTablExcelGraph.Length)
                     {
-                        Excel.Range amountofWorkerEachRazdelTabl = workSheetGraph.Cells[numChapterTablExcelGraph[indexofChapter - 1], 5];
-                        amountofWorkerOnEachChapter = (int)(amountofWorkerEachRazdelTabl.Value2);
-                        Excel.Range trudWork = workSheetGraph.Cells[j, 4];
-                        Excel.Range numberofWorkerEachWorkTabl = workSheetGraph.Cells[j, 5];
-                        Excel.Range numberofDaysEachWorkTabl = workSheetGraph.Cells[j, 6];
-                        allWorker = (int)(numberofWorkerEachWorkTabl.Value2) + deltaWorker;
-                        sumAllWork += allWorker;
-                        summaAmountofWorkerEachWork = (int)sumAllWork;
-                        deltaWorker = trudWork.Value2/(8* (int)numberofDaysEachWorkTabl.Value2) - (int)(numberofWorkerEachWorkTabl.Value2);
+                        if (j == numChapterTablExcelGraph[indexofChapter])
+                        {
+                            indexofChapter++;
+                            Excel.Range amountofDaysEachRazdelTabl = workSheetGraph.Cells[numChapterTablExcelGraph[indexofChapter - 1], 6];
+                            amountOfDaysOnEachChapter = (int)(amountofDaysEachRazdelTabl.Value2);
+                            amountOfDaysOnAllChapter += amountOfDaysOnEachChapter;
+                        }
+                    }
+                    if (indexofChapter > 0)
+                    {
+                        if (j >= numChapterTablExcelGraph[indexofChapter - 1] + 1)
+                        {
+                            Excel.Range amountofWorkerEachRazdelTabl = workSheetGraph.Cells[numChapterTablExcelGraph[indexofChapter - 1], 5];
+                            amountofWorkerOnEachChapter = (int)(amountofWorkerEachRazdelTabl.Value2);
+                            Excel.Range trudWork = workSheetGraph.Cells[j, 4];
+                            Excel.Range numberofWorkerEachWorkTabl = workSheetGraph.Cells[j, 5];
+                            Excel.Range numberofDaysEachWorkTabl = workSheetGraph.Cells[j, 6];
+                            allWorker = (int)(numberofWorkerEachWorkTabl.Value2) + deltaWorker;
+                            sumAllWork += allWorker;
+                            summaAmountofWorkerEachWork = (int)sumAllWork;
+                            deltaWorker = trudWork.Value2 / (8 * (int)numberofDaysEachWorkTabl.Value2) - (int)(numberofWorkerEachWorkTabl.Value2);
                             if (summaAmountofWorkerEachWork < amountofWorkerOnEachChapter)
-                        {
-                            Excel.Range firstFillColour = workSheetGraph.Cells[j, 7 + summaAmountofDaysEachWork];
-                            Excel.Range lastFillColour = workSheetGraph.Cells[j, 7 + summaAmountofDaysEachWork + (int)(numberofDaysEachWorkTabl.Value2) - 1];
-                            if (lastFillColour.Column > LastCellGraph.Column) lastFillColour = LastCellGraph;
-                            Excel.Range rangeFillColour = workSheetGraph.get_Range(firstFillColour, lastFillColour);
-                            rangeFillColour.Interior.ColorIndex = color;
-                        }
-                        else
-                        {
-                            Excel.Range firstFillColour = workSheetGraph.Cells[j, 7 + summaAmountofDaysEachWork];
-                            Excel.Range lastFillColour;
-                            double chekWorker=1.0*summaAmountofWorkerEachWork / amountofWorkerOnEachChapter;
-                            if (chekWorker >= 1.5)
-                            lastFillColour = workSheetGraph.Cells[j, 7 + summaAmountofDaysEachWork + (int)(numberofDaysEachWorkTabl.Value2)];
-                            else
-                            lastFillColour = workSheetGraph.Cells[j, 7 + summaAmountofDaysEachWork + (int)(numberofDaysEachWorkTabl.Value2) - 1];
+                            {
+                                Excel.Range firstFillColour = workSheetGraph.Cells[j, 7 + summaAmountofDaysEachWork];
+                                Excel.Range lastFillColour = workSheetGraph.Cells[j, 7 + summaAmountofDaysEachWork + (int)(numberofDaysEachWorkTabl.Value2) - 1];
                                 if (lastFillColour.Column > LastCellGraph.Column) lastFillColour = LastCellGraph;
-                            Excel.Range rangeFillColour = workSheetGraph.get_Range(firstFillColour, lastFillColour);
-                            rangeFillColour.Interior.ColorIndex = color;
-                            summaAmountofDaysEachWork += (int)(numberofDaysEachWorkTabl.Value2);
-                            if (summaAmountofDaysEachWork > amountOfDaysOnAllChapter) summaAmountofDaysEachWork -= 1; //бригада переходит на следующие работы в тот же день                          
+                                Excel.Range rangeFillColour = workSheetGraph.get_Range(firstFillColour, lastFillColour);
+                                rangeFillColour.Interior.ColorIndex = color;
+                            }
+                            else
+                            {
+                                Excel.Range firstFillColour = workSheetGraph.Cells[j, 7 + summaAmountofDaysEachWork];
+                                Excel.Range lastFillColour;
+                                double chekWorker = 1.0 * summaAmountofWorkerEachWork / amountofWorkerOnEachChapter;
+                                if (chekWorker >= 1.5)
+                                    lastFillColour = workSheetGraph.Cells[j, 7 + summaAmountofDaysEachWork + (int)(numberofDaysEachWorkTabl.Value2)];
+                                else
+                                    lastFillColour = workSheetGraph.Cells[j, 7 + summaAmountofDaysEachWork + (int)(numberofDaysEachWorkTabl.Value2) - 1];
+                                if (lastFillColour.Column > LastCellGraph.Column) lastFillColour = LastCellGraph;
+                                Excel.Range rangeFillColour = workSheetGraph.get_Range(firstFillColour, lastFillColour);
+                                rangeFillColour.Interior.ColorIndex = color;
+                                summaAmountofDaysEachWork += (int)(numberofDaysEachWorkTabl.Value2);
+                                if (summaAmountofDaysEachWork > amountOfDaysOnAllChapter) summaAmountofDaysEachWork -= 1; //бригада переходит на следующие работы в тот же день                          
+                            }
+                            if (sumAllWork > amountofWorkerOnEachChapter)
+                                sumAllWork -= amountofWorkerOnEachChapter;
                         }
-                        if (sumAllWork > amountofWorkerOnEachChapter)
-                            sumAllWork -= amountofWorkerOnEachChapter;
                     }
                 }
+                FirstCellGraph = workSheetGraph.Cells[FirstCellGraph.Row + 2, FirstCellGraph.Column + 1];
+                LastCellGraph = workSheetGraph.Cells[FirstCellGraph.Row + amountOfWorkInChapter + 1, FirstCellGraph.Column + 1];
+                Excel.Range rangeCellsGrafik = workSheetGraph.get_Range(FirstCellGraph, LastCellGraph);
+                rangeCellsGrafik.EntireColumn.HorizontalAlignment = Excel.Constants.xlLeft;
+                workBookGraph.SaveAs(_graphAdress);
+                object misValue = System.Reflection.Missing.Value;
+                _oneSmeta.Close(false, misValue, misValue);
+                Marshal.FinalReleaseComObject(_oneSmeta);
+                Marshal.FinalReleaseComObject(rangeCellsGrafik);
+                Marshal.FinalReleaseComObject(workSheetGraph);
+                workBookGraph.Close(true, misValue, misValue);
+
             }
-            FirstCellGraph = workSheetGraph.Cells[FirstCellGraph.Row + 2, FirstCellGraph.Column + 1];
-            LastCellGraph = workSheetGraph.Cells[FirstCellGraph.Row + amountOfWorkInChapter + 1, FirstCellGraph.Column + 1];
-            Excel.Range rangeCellsGrafik = workSheetGraph.get_Range(FirstCellGraph, LastCellGraph);
-            rangeCellsGrafik.EntireColumn.HorizontalAlignment = Excel.Constants.xlLeft;          
-            workBookGraph.SaveAs(_graphAdress);       
-            object misValue = System.Reflection.Missing.Value;
-            _oneSmeta.Close(false, misValue, misValue);
-            Marshal.FinalReleaseComObject(_oneSmeta);
-            Marshal.FinalReleaseComObject(rangeCellsGrafik);
-            Marshal.FinalReleaseComObject(workSheetGraph);
-            workBookGraph.Close(true, misValue, misValue);
-           
-        }
             catch (COMException exc)
             {
                 _textError += $"{exc.Message} Закройте файл графика и повторите снова/Файл не будет пересохранен";
@@ -870,7 +872,7 @@ namespace ExcelEditor.bl
             }
         }
 
-        public void RecordAllString( int amountOfWorkers, Excel.Worksheet workSheetGrafik, ref int amountOfWorkInChapter, ref int[] numChapterTablExcelGrafik, ref int[] amountOfWorkersInChapter)
+        public void RecordAllString(int amountOfWorkers, Excel.Worksheet workSheetGrafik, ref int amountOfWorkInChapter, ref int[] numChapterTablExcelGrafik, ref int[] amountOfWorkersInChapter)
         {
             Excel.Range firstCellAfterContent = workSheetGrafik.Range["B6"];
             int indexAmountWorkInChapter = 0, AmountofWorkerinEachWork = 0, numPosGrafik = 0, indexChapt = 0;
@@ -891,7 +893,7 @@ namespace ExcelEditor.bl
                     if (keyNumPosSmetaChapterInOrder[indexAmountOfRowEachWorkinChapter] == _startChapter[r] && _amounWorkInChapter[_startChapter[r]] == keyNumPosSmetaChapterInOrder.Length)
                     {
                         indexAmountOfRowEachWorkinChapter = 0;
-                        string nameOfRazdel = _cellsAllChapter[r].Value.ToString();                     
+                        string nameOfRazdel = _cellsAllChapter[r].Value.ToString();
                         workSheetGrafik.Cells[firstCellAfterContent.Row + amountOfWorkInChapter, firstCellAfterContent.Column] = ++numPosGrafik;
                         numChapterTablExcelGrafik[indexChapt++] = firstCellAfterContent.Row + amountOfWorkInChapter;
                         workSheetGrafik.Cells[firstCellAfterContent.Row + amountOfWorkInChapter, firstCellAfterContent.Column + 1] = nameOfRazdel;

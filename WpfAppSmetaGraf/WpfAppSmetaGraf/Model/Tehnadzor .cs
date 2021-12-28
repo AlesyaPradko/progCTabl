@@ -1,20 +1,20 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Excel = Microsoft.Office.Interop.Excel;
 
-namespace ExcelEditor.bl
+namespace WpfAppSmetaGraf.Model
 {
     public class Tehnadzor : Worker
     {
         public List<Excel.Workbook> _aktKSinOrderSort;
         public Tehnadzor() : base()
         { }
-        protected override void ProcessSmeta(List<Excel.Workbook> listAktKStoOneSmeta, Excel.Workbook copySmeta, RangeFile processingArea, string adresSmeta,int size,ref string _textError)
+        protected override void ProcessSmeta(List<Excel.Workbook> listAktKStoOneSmeta, Excel.Workbook copySmeta, RangeFile processingArea, string adresSmeta, int size, ref string _textError)
         {
             object misValue;
             Excel.Worksheet sheetCopySmeta = copySmeta.Sheets[1];
@@ -47,7 +47,7 @@ namespace ExcelEditor.bl
                         Marshal.FinalReleaseComObject(rangeAktKS);
                         Marshal.FinalReleaseComObject(workSheetAktKS);
                     });
-                   
+
                 }
                 _textError += error;
                 RecordFileTehnadzor(sheetCopySmeta, rangeSmetaOne, forRecordWorkColumnInSmeta, nameAktKSRecordColumn, ref nextInsertColumn, ref _textError, adresSmeta);
@@ -80,13 +80,13 @@ namespace ExcelEditor.bl
                 copySmeta.Close(true, misValue, misValue);
                 Marshal.FinalReleaseComObject(copySmeta);
                 throw new NullValueException($" Проверьте чтобы в {adresSmeta} было верно записано устойчивое выражение [№ пп] или [Кол.]\n");
-            }        
+            }
         }
 
         //метод возврашает строку - наименование столбца выполненных объемов работ по КС-2 за определенный период и заполняет словарь
         //где ключ -номер позиции по смете из Актов КС, значение выполнение по смете
-        private void WorkWithAktKSTehnadzor(Excel.Worksheet workSheetAktKS, Excel.Range rangeAktKS, string adresKs, ref string error,ref string nameAktKS, ref Dictionary<int, double> totalScopeWorkAktKSone)
-        {          
+        private void WorkWithAktKSTehnadzor(Excel.Worksheet workSheetAktKS, Excel.Range rangeAktKS, string adresKs, ref string error, ref string nameAktKS, ref Dictionary<int, double> totalScopeWorkAktKSone)
+        {
             try
             {
                 nameAktKS = "Акт КС-2 №";
@@ -105,7 +105,7 @@ namespace ExcelEditor.bl
                         string monthAktKS = ParserExc.FindDateAktKS(regul.regexMonth, findCellDatAktKS);
                         string monthAktKSpropis = ParserExc.MonthLetter(monthAktKS);
                         nameAktKS += $" {findCellNumAktKS.Value.ToString()} {monthAktKSpropis}{yearAktKS} ";
-                        totalScopeWorkAktKSone = ParserExc.GetScopeWorkAktKSone(workSheetAktKS, rangeAktKS, keyNumPozpoSmeteinAktKS, keyscopeWorkinAktKS, adresKs,ref error);
+                        totalScopeWorkAktKSone = ParserExc.GetScopeWorkAktKSone(workSheetAktKS, rangeAktKS, keyNumPozpoSmeteinAktKS, keyscopeWorkinAktKS, adresKs, ref error);
                     }
                     else
                     {
@@ -129,12 +129,12 @@ namespace ExcelEditor.bl
 
         //метод записывает в файл копии сметы объемы из Актов КС-2, каждый месяц в новый столбец,
         //вставка столбцов идет за столбцом объемы по смете  
-        private void RecordFileTehnadzor(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, List<Dictionary<int, double>> forRecordWorkColumninSmeta,List <string> nameAktKSRecordColumn, ref int nextInsertColumn, ref string _textError, string adresSmeta)
+        private void RecordFileTehnadzor(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, List<Dictionary<int, double>> forRecordWorkColumninSmeta, List<string> nameAktKSRecordColumn, ref int nextInsertColumn, ref string _textError, string adresSmeta)
         {
             //Console.WriteLine(" RecordFileTehnadzor");
-           Regex nameAkt = new Regex(@"№\s*\d+", RegexOptions.IgnoreCase);
-            string numFind=null,numberFind=null;
-           int pozSmeta;
+            Regex nameAkt = new Regex(@"№\s*\d+", RegexOptions.IgnoreCase);
+            string numFind = null, numberFind = null;
+            int pozSmeta;
             for (int u = 0; u < _aktKSinOrderSort.Count; u++)
             {
                 for (int i = 0; i < forRecordWorkColumninSmeta.Count; i++)
@@ -144,7 +144,7 @@ namespace ExcelEditor.bl
                     {
                         foreach (Match num in matchNumAkt)
                         {
-                           numFind = num.Value;
+                            numFind = num.Value;
                         }
                         numberFind = null;
                         for (int ii = 0; ii < numFind.Length; ii++)
@@ -157,7 +157,7 @@ namespace ExcelEditor.bl
                     if (_aktKSinOrderSort[u].FullName.Contains(numberFind))
                     {
                         // MatchCollection matchNumAkt = nameAkt.Matches(_aktKSinOrderSort[u].FullName);
-                        ICollection keyCollScopeWorkAktKSone = forRecordWorkColumninSmeta[i].Keys;
+                        ICollection<int> keyCollScopeWorkAktKSone = forRecordWorkColumninSmeta[i].Keys;
                         for (int j = rangeSmetaOne.Row; j < rangeSmetaOne.Rows.Count + rangeSmetaOne.Row + 1; j++)
                         {
                             Excel.Range cellsNextColumnTablInsert = SheetcopySmetaOne.Cells[j, nextInsertColumn];
@@ -272,88 +272,88 @@ namespace ExcelEditor.bl
         {
             List<Excel.Workbook> aktKSinOrderSort = new List<Excel.Workbook>();
             //Console.WriteLine(" SortAktKSforTehnadzor");
-                if (listAktKStoOneSmeta != null)
+            if (listAktKStoOneSmeta != null)
+            {
+                RegexReg reg = new RegexReg();
+                Dictionary<string, int> nomercifraList = new Dictionary<string, int>();
+                for (int i = 0; i < listAktKStoOneSmeta.Count; i++)
                 {
-                    RegexReg reg = new RegexReg();
-                    Dictionary<string, int> nomercifraList = new Dictionary<string, int>();
-                    for (int i = 0; i < listAktKStoOneSmeta.Count; i++)
+                    string monthAktKS = null, yearAktKS = null, dateVal = null;
+                    int yearVal = 0, monthVal = 0;
+                    string numerKS = listAktKStoOneSmeta[i].FullName;
+                    MatchCollection mathesDate = reg.regexData.Matches(numerKS);
+                    if (mathesDate.Count > 0)
                     {
-                        string monthAktKS = null, yearAktKS = null, dateVal = null;
-                        int yearVal = 0, monthVal = 0;
-                        string numerKS = listAktKStoOneSmeta[i].FullName;
-                        MatchCollection mathesDate = reg.regexData.Matches(numerKS);
-                        if (mathesDate.Count > 0)
+                        foreach (Match date in mathesDate)
                         {
-                            foreach (Match date in mathesDate)
+                            dateVal = date.Value;
+                        }
+                        MatchCollection mathesMonth = reg.regexMonth.Matches(dateVal);
+                        MatchCollection mathesYear = reg.regexYear.Matches(dateVal);
+                        if (mathesMonth.Count > 0 && mathesYear.Count > 0)
+                        {
+                            foreach (Match month in mathesMonth)
                             {
-                                dateVal = date.Value;
+                                monthAktKS = month.Value;
+                                monthAktKS = monthAktKS.Remove(monthAktKS.Length - 1, 1);
+                                monthVal = Convert.ToInt32(monthAktKS);
                             }
-                            MatchCollection mathesMonth = reg.regexMonth.Matches(dateVal);
-                            MatchCollection mathesYear = reg.regexYear.Matches(dateVal);
-                            if (mathesMonth.Count > 0 && mathesYear.Count > 0)
+                            foreach (Match year in mathesYear)
                             {
-                                foreach (Match month in mathesMonth)
-                                {
-                                    monthAktKS = month.Value;
-                                    monthAktKS = monthAktKS.Remove(monthAktKS.Length - 1, 1);
-                                    monthVal = Convert.ToInt32(monthAktKS);
-                                }
-                                foreach (Match year in mathesYear)
-                                {
-                                    yearAktKS = year.Value;
-                                    yearAktKS = yearAktKS.Remove(0, 1);
-                                    yearVal = Convert.ToInt32(yearAktKS);
-                                }
-                                int nomercifra = yearVal * 100 + monthVal;                                
-                                nomercifraList.Add(dateVal, nomercifra);
+                                yearAktKS = year.Value;
+                                yearAktKS = yearAktKS.Remove(0, 1);
+                                yearVal = Convert.ToInt32(yearAktKS);
                             }
+                            int nomercifra = yearVal * 100 + monthVal;
+                            nomercifraList.Add(dateVal, nomercifra);
                         }
                     }
-                    if (nomercifraList.Count > 0)
+                }
+                if (nomercifraList.Count > 0)
+                {
+                    int[] valueNomerCifra = nomercifraList.Values.ToArray();
+                    string[] keyNomerCifra = nomercifraList.Keys.ToArray();
+                    for (int i = 1; i < valueNomerCifra.Length; i++)
                     {
-                        int[] valueNomerCifra = nomercifraList.Values.ToArray();
-                        string[] keyNomerCifra = nomercifraList.Keys.ToArray();
-                        for (int i = 1; i < valueNomerCifra.Length; i++)
+                        for (int j = i; j > 0; j--)
                         {
-                            for (int j = i; j > 0; j--)
+                            if (valueNomerCifra[j] < valueNomerCifra[j - 1])
                             {
-                                if (valueNomerCifra[j] < valueNomerCifra[j - 1])
-                                {
-                                    int temp = valueNomerCifra[j - 1];
-                                    valueNomerCifra[j - 1] = valueNomerCifra[j];
-                                    valueNomerCifra[j] = temp;
-                                    string test = keyNomerCifra[j - 1];
-                                    keyNomerCifra[j - 1] = keyNomerCifra[j];
-                                    keyNomerCifra[j] = test;
-                                }
-                                else break;
+                                int temp = valueNomerCifra[j - 1];
+                                valueNomerCifra[j - 1] = valueNomerCifra[j];
+                                valueNomerCifra[j] = temp;
+                                string test = keyNomerCifra[j - 1];
+                                keyNomerCifra[j - 1] = keyNomerCifra[j];
+                                keyNomerCifra[j] = test;
                             }
+                            else break;
                         }
+                    }
 
-                        for (int j = 0; j < keyNomerCifra.Length; j++)
+                    for (int j = 0; j < keyNomerCifra.Length; j++)
+                    {
+                        for (int i = 0; i < listAktKStoOneSmeta.Count; i++)
                         {
-                            for (int i = 0; i < listAktKStoOneSmeta.Count; i++)
+                            string numerKS = listAktKStoOneSmeta[i].FullName;
+                            if (numerKS.Contains(keyNomerCifra[j]))
                             {
-                                string numerKS = listAktKStoOneSmeta[i].FullName;
-                                if (numerKS.Contains(keyNomerCifra[j]))
-                                {
-                                string iii= keyNomerCifra[j];
-                                    aktKSinOrderSort.Add(listAktKStoOneSmeta[i]);
-                                    Console.WriteLine(numerKS);
-                                    break;
-                                }
+                                string iii = keyNomerCifra[j];
+                                aktKSinOrderSort.Add(listAktKStoOneSmeta[i]);
+                                Console.WriteLine(numerKS);
+                                break;
                             }
                         }
                     }
-                    else
+                }
+                else
+                {
+                    if (listAktKStoOneSmeta.Count > 0)
                     {
-                        if (listAktKStoOneSmeta.Count > 0)
-                        {
-                            _textError+= "Так как Вы не указали в названии Актов КС-2 дату в форме мм.гггг, то в итоговой таблице Акты не будут отсортированы по порядку\n";
-                            aktKSinOrderSort = listAktKStoOneSmeta;
-                        }
+                        _textError += "Так как Вы не указали в названии Актов КС-2 дату в форме мм.гггг, то в итоговой таблице Акты не будут отсортированы по порядку\n";
+                        aktKSinOrderSort = listAktKStoOneSmeta;
                     }
-                }        
+                }
+            }
             return aktKSinOrderSort;
         }
     }

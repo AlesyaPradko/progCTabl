@@ -24,11 +24,16 @@ namespace SmetaAndGraphs
         private int _monthStart = 0;
         private int _yearStart = 0;
         private int _colorGet = 0;
+        private bool _flag;
+        private bool _exitOperation;
+
         public MainPresenter(IForm1 view, IFileManager manager, IMessageService service)
         {
             _view = view;
             _manager = manager;
             _service = service;
+            _view.Flag = true;
+            _exitOperation = false;
             _view.FileStartClik += _view_FileStartClik;
             _view.SelectModE += _view_SelectModE;
             _view.SelectModT += _view_SelectModT;
@@ -42,14 +47,14 @@ namespace SmetaAndGraphs
             _view.ChangePeople += _view_ChangePeople;
             _view.SelectColor += _view_SelectColor;
             _view.ExitError += _view_ExitError;
-     
         }
 
         private void _view_ExitError(object sender, EventArgs e)
         {
-            _manager.ExitError();
+            if (_view.Flag) _manager.ExitError();
+            else _service.ShowExclamation("Вы не можете выйти, производится работа над файлами");
         }
-
+        
         private void _view_SelectColor(object sender, EventArgs e)
         {
             string color = _view.ColorGraph;
@@ -73,9 +78,8 @@ namespace SmetaAndGraphs
         }
         private void _view_GraphFirstStartClik(object sender, EventArgs e)
         {
-
                 _manager.InitializationFormGr(_view.OneSmetaAdres, _view.WhereSaveGraph);
-                _manager.StartChoice();       
+                _manager.StartChoice();
                 _view.MinAmountDays = _manager.MinDays;
                 _view.MaxAmountDays = _manager.MaxDays;
                 _view.MinAmountPeople = _manager.MinPeople;
@@ -104,52 +108,72 @@ namespace SmetaAndGraphs
             _manager.GetInputValueData(_dayStart, _monthStart, _yearStart);          
         }
 
-        private void _view_GraphStartClik(object sender, EventArgs e)
+        private async void _view_GraphStartClik(object sender, EventArgs e)
         {
-            if (_colorGet == 0) _colorGet = TakeColor(_view.ColorGraph);
-            if (_testDay)
+            if (_view.Flag == true)
             {
-                Task taskBut = Task.Factory.StartNew(() =>
+                if (_colorGet == 0) _colorGet = TakeColor(_view.ColorGraph);
+                _flag = false;
+                _view.Flag = _flag;
+                if (_testDay)
                 {
-                    if (_days == 0) _manager.InputDays(_view.AmountDays);
-                    if (_dayStart == 0) _manager.GetInputValueData(_view.Days, _view.Month, _view.Year);
-                    _manager.StartGraphDays(_colorGet);
-                    if (_manager.TextError == null)
+                    await Task.Factory.StartNew(() =>
                     {
-                        _service.ShowMessage("График успешно сохранен");
-                    }
-                    else
+                        if (_days == 0) _manager.InputDays(_view.AmountDays);
+                        if (_dayStart == 0) _manager.GetInputValueData(_view.Days, _view.Month, _view.Year);
+                        _manager.StartGraphDays(_colorGet);
+                        _flag = true;
+                        _view.Flag = _flag;
+                        _exitOperation = true;                     
+                    });
+                    if (_exitOperation)
                     {
-                        string error = _manager.TextError;
-                        _service.ShowError($"{_manager.TextError}\n Устраните все ошибки и попробуйте снова");
+                        if (_manager.TextError == null)
+                        {
+                            _service.ShowMessage("График успешно сохранен");
+                        }
+                        else
+                        {
+                            _view.GetAllErrorGr(_manager.TextError);
+                            _service.ShowError("Устраните все ошибки и попробуйте снова");
+                        }
                     }
-                });
-
-            }
-            else if (_testPeople)
-            {
-                Task taskBut = Task.Factory.StartNew(() =>
+                }
+                else if (_testPeople)
                 {
-                    if (_workers == 0) _manager.InputPeople(_view.AmountPeople);
-                    if (_dayStart == 0) _manager.GetInputValueData(_view.Days, _view.Month, _view.Year);
-                    _manager.StartGraphPeople(_colorGet);
-                    if (_manager.TextError == null)
-                    {
-                        _service.ShowMessage("График успешно сохранен");
-                    }
-                    else
-                    {
-                        string error = _manager.TextError;
-                        _service.ShowError($"{_manager.TextError}\nУстраните все ошибки и попробуйте снова");  
-                    }
-                });
 
+                    await Task.Factory.StartNew(() =>
+                    {
+                        if (_workers == 0) _manager.InputPeople(_view.AmountPeople);
+                        if (_dayStart == 0) _manager.GetInputValueData(_view.Days, _view.Month, _view.Year);
+                        _manager.StartGraphPeople(_colorGet);
+                        _flag = true;
+                        _view.Flag = _flag;
+                        _exitOperation = true;
+                      
+                    });
+                    if(_exitOperation)
+                    {
+                        if (_manager.TextError == null)
+                        {
+                            _service.ShowMessage("График успешно сохранен");
+                        }
+                        else
+                        {
+                            _view.GetAllErrorGr(_manager.TextError);
+                            _service.ShowError($"Устраните все ошибки и попробуйте снова");
+                        }
+                    }
+                }
+                else
+                {
+                    _service.ShowExclamation("Вы не выбрали количество человек или дней!");
+                    _flag = true;
+                    _view.Flag = _flag;
+                }
+                _view.StartFormGraf();
             }
-            else
-            {
-                _service.ShowExclamation("Вы не выбрали количество человек или дней!");
-            }
-            _view.Flag = true;
+            else _service.ShowExclamation("Вы уже запустили процесс обработки. Подождите!");
         }
 
         private void _view_SelectPeople(object sender, EventArgs e)
@@ -190,46 +214,65 @@ namespace SmetaAndGraphs
             _testE =_manager.SelectExpert();
         }
 
-        private void _view_FileStartClik(object sender, EventArgs e)
+        private async void _view_FileStartClik(object sender, EventArgs e)
         {
-
-            if (_testE)
+            if (_view.Flag == true)
             {
-                Task taskBut = Task.Factory.StartNew(() =>
+                _flag = false;
+                _view.Flag = _flag;
+                if (_testE)
                 {
-                    _manager.StartProcessE();
-
-                    if (_manager.TextError.Length == 0)
+                    await Task.Factory.StartNew(() =>
                     {
-                        _service.ShowMessage("Ведомость эксперта успешно сохранена");
-                    }
-                    else
+                        _manager.StartProcessE();
+                        _flag = true;
+                        _view.Flag = _flag;
+                        _exitOperation = true;                     
+                    });
+                    if(_exitOperation)
                     {
-                        string error = _manager.TextError;
-                        _service.ShowError($"{_manager.TextError}\nУстраните все ошибки и попробуйте снова");
+                        if (_manager.TextError.Length == 0)
+                        {
+                            _service.ShowMessage("Ведомость эксперта успешно сохранена");
+                        }
+                        else
+                        {
+                            _view.GetAllError(_manager.TextError);
+                            _service.ShowError("Устраните все ошибки и попробуйте снова");
+                        }
                     }
-                });
-            }
-            else if (_testT)
-            {
-                Task taskBut = Task.Factory.StartNew(() =>
+                }
+               
+                else if (_testT)
                 {
-                    _manager.StartProcessT();
-                    if (_manager.TextError.Length == 0)
+                    await Task.Factory.StartNew(() =>
                     {
-                        _service.ShowMessage("Ведомость технадзора успешно сохранена");
-                    }
-                    else
+                        _manager.StartProcessT();
+                        _flag = true;
+                        _view.Flag = _flag;
+                        _exitOperation = true;                       
+                    });
+                    if (_exitOperation)
                     {
-                        _service.ShowError($"{_manager.TextError}\nУстраните все ошибки и попробуйте снова");
+                        if (_manager.TextError.Length == 0)
+                        {
+                            _service.ShowMessage("Ведомость технадзора успешно сохранена");
+                        }
+                        else
+                        {
+                            _view.GetAllError(_manager.TextError);
+                            _service.ShowError($"Устраните все ошибки и попробуйте снова");
+                        }
                     }
-                });
+                }
+                else
+                {
+                    _service.ShowExclamation("Вы не выбрали режим!");
+                    _flag = true;
+                    _view.Flag = _flag;
+                }
             }
-            else
-            {
-                _service.ShowExclamation("Вы не выбрали режим!");
-            }
-            _view.Flag = true;
+            else _service.ShowExclamation("Вы уже запустили процесс обработки. Подождите!");
         }
     }
 }

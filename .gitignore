@@ -52,8 +52,8 @@ Mkfile.old
 dkms.conf
 
 ConsoleApp3
-SmetaAndGraphs/SmetaAndGraphs/bin
-SmetaAndGraphs/SmetaAndGraphs/obj
-SmetaAndGraphs/SmetaAndGraphs/Properties
-SmetaAndGraphs/packages
-WpfAppSmetaGraf
+SmetaAndGraphs
+WpfAppSmetaGraf/packages
+WpfAppSmetaGraf/WpfAppSmetaGraf/bin
+WpfAppSmetaGraf/WpfAppSmetaGraf/obj
+WpfAppSmetaGraf/WpfAppSmetaGraf/Properties

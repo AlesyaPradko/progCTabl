@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Excel = Microsoft.Office.Interop.Excel;
 
-namespace ExcelEditor.bl
+namespace WpfAppSmetaGraf.Model
 {
     public abstract class Worker
     {
@@ -77,42 +77,42 @@ namespace ExcelEditor.bl
                     // throw new NullValueException($"В названии сметы {_adresSmeta[i]} отсутствует символ № перед номером сметы\n");    
                 }
             }
-            if (_adresSmeta.Count==0)
-            {              
-               excelApp.Quit();
-               throw new NullValueException("");
+            if (_adresSmeta.Count == 0)
+            {
+                excelApp.Quit();
+                throw new NullValueException("");
             }
             List<Excel.Workbook> containFolderKS = ParserExc.GetBookAllAktandSmeta(_userAdresKS, excelApp);
             if (containFolderKS.Count == 0 || _adresAktKS.Count == 0)
             {
                 throw new DontHaveExcelException("В указанной вами папке нет файлов формата .xlsx. Попробуйте выбрать другую папку\n");
             }
-            _aktAllKSforOneSmeta = ParserExc.GetContainAktKSinOneSmeta(containFolderKS, AdresSmeta, AdresAktKS,ref _textError);
+            _aktAllKSforOneSmeta = ParserExc.GetContainAktKSinOneSmeta(containFolderKS, AdresSmeta, AdresAktKS, ref _textError);
             for (int numSmeta = 0; numSmeta < containFolderSmeta.Count; numSmeta++)
             {
-                    List<Excel.Workbook> containCopySmeta = MadeCopySmet(excelApp, containFolderSmeta);
-                    List<Excel.Workbook> listAktKStoOneSmeta = GetAllAktToOneSmeta(containFolderKS, numSmeta, ref _textError);
-                    ProcessSmeta(listAktKStoOneSmeta, containCopySmeta[numSmeta], processingArea, containCopySmeta[numSmeta].FullName, size, ref _textError);
-             }  
+                List<Excel.Workbook> containCopySmeta = MadeCopySmet(excelApp, containFolderSmeta);
+                List<Excel.Workbook> listAktKStoOneSmeta = GetAllAktToOneSmeta(containFolderKS, numSmeta, ref _textError);
+                ProcessSmeta(listAktKStoOneSmeta, containCopySmeta[numSmeta], processingArea, containCopySmeta[numSmeta].FullName, size, ref _textError);
+            }
         }
-        private List<Excel.Workbook> GetAllAktToOneSmeta(List<Excel.Workbook> containFolderKS, int numSmeta,ref string _textError)
-        {         
-                List<Excel.Workbook> listAktKStoOneSmeta = new List<Excel.Workbook>();
-                for (int v = 0; v < _aktAllKSforOneSmeta[_adresSmeta[numSmeta]].Count; v++)
+        private List<Excel.Workbook> GetAllAktToOneSmeta(List<Excel.Workbook> containFolderKS, int numSmeta, ref string _textError)
+        {
+            List<Excel.Workbook> listAktKStoOneSmeta = new List<Excel.Workbook>();
+            for (int v = 0; v < _aktAllKSforOneSmeta[_adresSmeta[numSmeta]].Count; v++)
+            {
+                for (int numKS = 0; numKS < containFolderKS.Count; numKS++)
                 {
-                    for (int numKS = 0; numKS < containFolderKS.Count; numKS++)
+                    if (_adresAktKS[numKS] != _aktAllKSforOneSmeta[_adresSmeta[numSmeta]][v]) continue;
+                    else
                     {
-                        if (_adresAktKS[numKS] != _aktAllKSforOneSmeta[_adresSmeta[numSmeta]][v]) continue;
-                        else
-                        {
-                            listAktKStoOneSmeta.Add(containFolderKS[numKS]);
-                        }
+                        listAktKStoOneSmeta.Add(containFolderKS[numKS]);
                     }
                 }
-                return listAktKStoOneSmeta;           
+            }
+            return listAktKStoOneSmeta;
         }
         //метод переопределяется в классах-наследниках для работы над сметой в разных режимах
-        protected abstract void ProcessSmeta(List<Excel.Workbook> listAktKStoOneSmeta, Excel.Workbook CopySmeta, RangeFile processingArea, string adresSmeta,int size,ref string _textError);
+        protected abstract void ProcessSmeta(List<Excel.Workbook> listAktKStoOneSmeta, Excel.Workbook CopySmeta, RangeFile processingArea, string adresSmeta, int size, ref string _textError);
         //метод возвращает ячейку в которой хранится название Акта КС-2 и его дата составления
         protected Excel.Range FindCellforNameKS(Excel.Worksheet workSheetAktKS, Excel.Range findNumberOrDataKS)
         {
@@ -148,37 +148,37 @@ namespace ExcelEditor.bl
 
         protected void FormatRecordCopySmeta(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, int size)
         {
-             int widthTabl = 0, testEmptyCells = 0;
-             for (int x = rangeSmetaOne.Column; x < rangeSmetaOne.Columns.Count + rangeSmetaOne.Column; x++)
-             {
-                 Excel.Range cellsFirstRowTabl = SheetcopySmetaOne.Cells[rangeSmetaOne.Row, x];
-                 if (cellsFirstRowTabl != null && cellsFirstRowTabl.Value2 != null && cellsFirstRowTabl.Value2.ToString() != "")
-                 {
-                     widthTabl++;
-                 }
-                 else
-                 {
-                     testEmptyCells++;
-                     if (cellsFirstRowTabl != null && cellsFirstRowTabl.Value2 != null && cellsFirstRowTabl.Value2.ToString() != "")
-                     {
-                         widthTabl += testEmptyCells;
-                         testEmptyCells = 0;
-                     }
-                 }
-                 if (testEmptyCells > 5) break;
-             }
-             Excel.Range lastCellFormat = SheetcopySmetaOne.Cells[rangeSmetaOne.Rows.Count + rangeSmetaOne.Row - 1, rangeSmetaOne.Column + widthTabl - 1];
-             Excel.Range firstCellFormat = SheetcopySmetaOne.Cells[rangeSmetaOne.Row, rangeSmetaOne.Column];
-             Excel.Range formarRange = SheetcopySmetaOne.get_Range(firstCellFormat, lastCellFormat);
-             formarRange.Cells.Borders.Weight = Excel.XlBorderWeight.xlMedium;
-             formarRange.EntireColumn.HorizontalAlignment = Excel.Constants.xlCenter;
-             formarRange.EntireColumn.VerticalAlignment = Excel.Constants.xlCenter;
-             formarRange.EntireColumn.Font.Size = size;
-             formarRange.EntireColumn.Font.FontStyle = "normal";
-             formarRange.EntireColumn.AutoFit();
-             Excel.Range lastCellwithAnotherWidth = SheetcopySmetaOne.Cells[lastCellFormat.Row, rangeSmetaOne.Column];
-             Excel.Range rangewithAnotherWidth = SheetcopySmetaOne.get_Range(firstCellFormat, lastCellwithAnotherWidth);
-             rangewithAnotherWidth.ColumnWidth = 12;
-        }       
+            int widthTabl = 0, testEmptyCells = 0;
+            for (int x = rangeSmetaOne.Column; x < rangeSmetaOne.Columns.Count + rangeSmetaOne.Column; x++)
+            {
+                Excel.Range cellsFirstRowTabl = SheetcopySmetaOne.Cells[rangeSmetaOne.Row, x];
+                if (cellsFirstRowTabl != null && cellsFirstRowTabl.Value2 != null && cellsFirstRowTabl.Value2.ToString() != "")
+                {
+                    widthTabl++;
+                }
+                else
+                {
+                    testEmptyCells++;
+                    if (cellsFirstRowTabl != null && cellsFirstRowTabl.Value2 != null && cellsFirstRowTabl.Value2.ToString() != "")
+                    {
+                        widthTabl += testEmptyCells;
+                        testEmptyCells = 0;
+                    }
+                }
+                if (testEmptyCells > 5) break;
+            }
+            Excel.Range lastCellFormat = SheetcopySmetaOne.Cells[rangeSmetaOne.Rows.Count + rangeSmetaOne.Row - 1, rangeSmetaOne.Column + widthTabl - 1];
+            Excel.Range firstCellFormat = SheetcopySmetaOne.Cells[rangeSmetaOne.Row, rangeSmetaOne.Column];
+            Excel.Range formarRange = SheetcopySmetaOne.get_Range(firstCellFormat, lastCellFormat);
+            formarRange.Cells.Borders.Weight = Excel.XlBorderWeight.xlMedium;
+            formarRange.EntireColumn.HorizontalAlignment = Excel.Constants.xlCenter;
+            formarRange.EntireColumn.VerticalAlignment = Excel.Constants.xlCenter;
+            formarRange.EntireColumn.Font.Size = size;
+            formarRange.EntireColumn.Font.FontStyle = "normal";
+            formarRange.EntireColumn.AutoFit();
+            Excel.Range lastCellwithAnotherWidth = SheetcopySmetaOne.Cells[lastCellFormat.Row, rangeSmetaOne.Column];
+            Excel.Range rangewithAnotherWidth = SheetcopySmetaOne.get_Range(firstCellFormat, lastCellwithAnotherWidth);
+            rangewithAnotherWidth.ColumnWidth = 12;
+        }
     }
 }

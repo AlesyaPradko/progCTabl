@@ -57,7 +57,7 @@ namespace ExcelEditor.bl
             }
 
             //метод возвращает словарь, ключ - адрес сметы, значение - адреса актов КС, относящихся к смете
-            public static Dictionary<string, List<string>> GetContainAktKSinOneSmeta(List<Excel.Workbook> ContainFolderKS, List<string> AdresSmeta, List<string> AdresAktKS)
+            public static Dictionary<string, List<string>> GetContainAktKSinOneSmeta(List<Excel.Workbook> ContainFolderKS, List<string> AdresSmeta, List<string> AdresAktKS,ref string _textError)
             {
                 Dictionary<string, List<string>> aktAllKSforOneSmeta = new Dictionary<string, List<string>>();
                 RegexReg reg = new RegexReg();
@@ -88,10 +88,10 @@ namespace ExcelEditor.bl
                                 Marshal.FinalReleaseComObject(rangAktKS);
                                 Marshal.FinalReleaseComObject(workShetAktKS);
                             }
-                            if (aktKSforSmeta.Count!=0)
-                            {
-                               aktAllKSforOneSmeta.Add(AdresSmeta[u], aktKSforSmeta);
-                            }
+                        if (aktKSforSmeta.Count == 0)
+                        _textError += $"В актах КС отсутствует номер сметы или неверно записан, либо для сметы {AdresSmeta[u]} нет актов КС-2 \n";
+                           // throw new DontHaveExcelException($"В актах КС отсутствует номер сметы или неверно записан, либо для сметы {AdresSmeta[u]} нет актов КС-2 \n");
+                        aktAllKSforOneSmeta.Add(AdresSmeta[u], aktKSforSmeta);
                         }
                     }
                 }
@@ -261,11 +261,8 @@ namespace ExcelEditor.bl
                             amountRow++;
                         }
                     }
-                    Excel.Range lastcellsFirstColumnTabl = SheetcopySmetaOne.Cells[rangeSmetaOne.Rows.Count, keyCellNomerpozSmeta.Column];
-                    if (lastcellsFirstColumnTabl != null && lastcellsFirstColumnTabl.Value != null && lastcellsFirstColumnTabl.Value2.ToString() != "")
-                    {
-                        throw new ZapredelException($"Вы задали слишком малую высоту для {AdresSm}\n");
-                    }
+                   // Excel.Range lastcellsFirstColumnTabl = SheetcopySmetaOne.Cells[rangeSmetaOne.Rows.Count, keyCellNomerpozSmeta.Column];
+          
                     deleteExcessCells.Reverse();
                     if (deleteExcessCells.Count != 0)
                     {
@@ -313,7 +310,7 @@ namespace ExcelEditor.bl
                     }
                     else
                     {
-                    throw new NullvalueException($" Проверьте чтобы в {AdresSm} было верно записано устойчивое выражение [(С|с)тоимость]\n");
+                    throw new NullValueException($" Проверьте чтобы в {AdresSm} было верно записано устойчивое выражение [(С|с)тоимость]\n");
                     }
                 }
                 catch (ArgumentOutOfRangeException exc)
@@ -358,14 +355,14 @@ namespace ExcelEditor.bl
                         summaString = summaString.Remove(summaString.Length - 1, 1);
                         trudozatratTotal = Convert.ToDouble(summaString);
                     }
-                    else throw new NullvalueException("Проверьте, чтобы значение трудоемкости не содержало в себе знака[.]");
+                    else throw new NullValueException("Проверьте, чтобы значение трудоемкости не содержало в себе знака[.]");
                 }
                 else
                 {
                     trudozatratTotal = Convert.ToDouble(summaString);
                 }
             }
-            catch (NullvalueException ex)
+            catch (NullValueException ex)
             {
                 _textError+= $"{ex.parName} ";
             }
@@ -483,7 +480,6 @@ namespace ExcelEditor.bl
                     {
                         if (keyNumberTrudozatratEachWork[i] >= startChapt && keyNumberTrudozatratEachWork[i] < lastChapt)
                         {
-                            Console.WriteLine(keyNumberTrudozatratEachWork[i] + " + " + i);
                             inChapterNumberPosAndNumWorkInArr.Add(keyNumberTrudozatratEachWork[i], i);
                         }
                     }

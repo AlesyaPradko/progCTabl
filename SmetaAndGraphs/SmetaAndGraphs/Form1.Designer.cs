@@ -32,7 +32,6 @@ namespace SmetaAndGraphs
             this.components = new System.ComponentModel.Container();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPageSmeta = new System.Windows.Forms.TabPage();
-            this.butStartChoise = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.numericFront = new System.Windows.Forms.NumericUpDown();
             this.groupBoxSmeta = new System.Windows.Forms.GroupBox();
@@ -64,6 +63,8 @@ namespace SmetaAndGraphs
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.fontDialog1 = new System.Windows.Forms.FontDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.textBoxStatus = new System.Windows.Forms.TextBox();
+            this.textBoxStatusGr = new System.Windows.Forms.TextBox();
             this.tabControl.SuspendLayout();
             this.tabPageSmeta.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericFront)).BeginInit();
@@ -90,7 +91,7 @@ namespace SmetaAndGraphs
             // tabPageSmeta
             // 
             this.tabPageSmeta.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.tabPageSmeta.Controls.Add(this.butStartChoise);
+            this.tabPageSmeta.Controls.Add(this.textBoxStatus);
             this.tabPageSmeta.Controls.Add(this.label2);
             this.tabPageSmeta.Controls.Add(this.numericFront);
             this.tabPageSmeta.Controls.Add(this.groupBoxSmeta);
@@ -105,16 +106,6 @@ namespace SmetaAndGraphs
             this.tabPageSmeta.Size = new System.Drawing.Size(783, 423);
             this.tabPageSmeta.TabIndex = 0;
             this.tabPageSmeta.Text = "Работа со сметами";
-            // 
-            // butStartChoise
-            // 
-            this.butStartChoise.Location = new System.Drawing.Point(49, 149);
-            this.butStartChoise.Name = "butStartChoise";
-            this.butStartChoise.Size = new System.Drawing.Size(166, 23);
-            this.butStartChoise.TabIndex = 23;
-            this.butStartChoise.Text = "Начать работу";
-            this.butStartChoise.UseVisualStyleBackColor = true;
-            this.butStartChoise.Click += new System.EventHandler(this.butStartChoise_Click);
             // 
             // label2
             // 
@@ -158,7 +149,6 @@ namespace SmetaAndGraphs
             this.groupBoxSmeta.TabIndex = 8;
             this.groupBoxSmeta.TabStop = false;
             this.groupBoxSmeta.Text = "Выберите режим работы";
-            this.groupBoxSmeta.Visible = false;
             // 
             // radioButExpert
             // 
@@ -187,7 +177,7 @@ namespace SmetaAndGraphs
             // butExitWorkSmeta
             // 
             this.butExitWorkSmeta.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.butExitWorkSmeta.Location = new System.Drawing.Point(678, 362);
+            this.butExitWorkSmeta.Location = new System.Drawing.Point(656, 284);
             this.butExitWorkSmeta.Name = "butExitWorkSmeta";
             this.butExitWorkSmeta.Size = new System.Drawing.Size(75, 23);
             this.butExitWorkSmeta.TabIndex = 7;
@@ -198,13 +188,12 @@ namespace SmetaAndGraphs
             // butStartWorkSmet
             // 
             this.butStartWorkSmet.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.butStartWorkSmet.Location = new System.Drawing.Point(32, 362);
+            this.butStartWorkSmet.Location = new System.Drawing.Point(19, 284);
             this.butStartWorkSmet.Name = "butStartWorkSmet";
-            this.butStartWorkSmet.Size = new System.Drawing.Size(75, 23);
+            this.butStartWorkSmet.Size = new System.Drawing.Size(161, 23);
             this.butStartWorkSmet.TabIndex = 6;
-            this.butStartWorkSmet.Text = "Старт";
+            this.butStartWorkSmet.Text = "Формирование ведомости";
             this.butStartWorkSmet.UseVisualStyleBackColor = true;
-            this.butStartWorkSmet.Visible = false;
             this.butStartWorkSmet.Click += new System.EventHandler(this.butStartWorkSmet_Click);
             // 
             // butSelectSave
@@ -240,6 +229,7 @@ namespace SmetaAndGraphs
             // tabPageGraph
             // 
             this.tabPageGraph.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.tabPageGraph.Controls.Add(this.textBoxStatusGr);
             this.tabPageGraph.Controls.Add(this.labelColor);
             this.tabPageGraph.Controls.Add(this.changeColor);
             this.tabPageGraph.Controls.Add(this.butStartGraph);
@@ -264,7 +254,7 @@ namespace SmetaAndGraphs
             // labelColor
             // 
             this.labelColor.AutoSize = true;
-            this.labelColor.Location = new System.Drawing.Point(421, 258);
+            this.labelColor.Location = new System.Drawing.Point(421, 205);
             this.labelColor.Name = "labelColor";
             this.labelColor.Size = new System.Drawing.Size(129, 13);
             this.labelColor.TabIndex = 28;
@@ -282,7 +272,7 @@ namespace SmetaAndGraphs
             this.changeColor.Items.Add("голубой");
             this.changeColor.Items.Add("коричневый");
             this.changeColor.Items.Add("черный");
-            this.changeColor.Location = new System.Drawing.Point(424, 274);
+            this.changeColor.Location = new System.Drawing.Point(424, 225);
             this.changeColor.Name = "changeColor";
             this.changeColor.Size = new System.Drawing.Size(120, 20);
             this.changeColor.TabIndex = 27;
@@ -292,7 +282,7 @@ namespace SmetaAndGraphs
             // 
             // butStartGraph
             // 
-            this.butStartGraph.Location = new System.Drawing.Point(167, 98);
+            this.butStartGraph.Location = new System.Drawing.Point(155, 61);
             this.butStartGraph.Name = "butStartGraph";
             this.butStartGraph.Size = new System.Drawing.Size(148, 23);
             this.butStartGraph.TabIndex = 26;
@@ -302,7 +292,7 @@ namespace SmetaAndGraphs
             // 
             // labeAmountDays
             // 
-            this.labeAmountDays.Location = new System.Drawing.Point(266, 220);
+            this.labeAmountDays.Location = new System.Drawing.Point(268, 171);
             this.labeAmountDays.Name = "labeAmountDays";
             this.labeAmountDays.Size = new System.Drawing.Size(150, 30);
             this.labeAmountDays.TabIndex = 25;
@@ -312,7 +302,7 @@ namespace SmetaAndGraphs
             // labelAmountPeople
             // 
             this.labelAmountPeople.AutoSize = true;
-            this.labelAmountPeople.Location = new System.Drawing.Point(15, 222);
+            this.labelAmountPeople.Location = new System.Drawing.Point(15, 169);
             this.labelAmountPeople.Name = "labelAmountPeople";
             this.labelAmountPeople.Size = new System.Drawing.Size(109, 13);
             this.labelAmountPeople.TabIndex = 24;
@@ -321,7 +311,7 @@ namespace SmetaAndGraphs
             // 
             // dateTimePicker1
             // 
-            this.dateTimePicker1.Location = new System.Drawing.Point(84, 274);
+            this.dateTimePicker1.Location = new System.Drawing.Point(86, 221);
             this.dateTimePicker1.MaxDate = new System.DateTime(2025, 12, 31, 0, 0, 0, 0);
             this.dateTimePicker1.MinDate = new System.DateTime(1999, 1, 1, 0, 0, 0, 0);
             this.dateTimePicker1.Name = "dateTimePicker1";
@@ -332,7 +322,7 @@ namespace SmetaAndGraphs
             // 
             // numericDays
             // 
-            this.numericDays.Location = new System.Drawing.Point(424, 220);
+            this.numericDays.Location = new System.Drawing.Point(424, 171);
             this.numericDays.Name = "numericDays";
             this.numericDays.Size = new System.Drawing.Size(120, 20);
             this.numericDays.TabIndex = 18;
@@ -341,7 +331,7 @@ namespace SmetaAndGraphs
             // 
             // numericPeople
             // 
-            this.numericPeople.Location = new System.Drawing.Point(130, 220);
+            this.numericPeople.Location = new System.Drawing.Point(130, 169);
             this.numericPeople.Name = "numericPeople";
             this.numericPeople.Size = new System.Drawing.Size(120, 20);
             this.numericPeople.TabIndex = 17;
@@ -351,7 +341,7 @@ namespace SmetaAndGraphs
             // buttonExitGraph
             // 
             this.buttonExitGraph.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonExitGraph.Location = new System.Drawing.Point(676, 366);
+            this.buttonExitGraph.Location = new System.Drawing.Point(677, 283);
             this.buttonExitGraph.Name = "buttonExitGraph";
             this.buttonExitGraph.Size = new System.Drawing.Size(75, 23);
             this.buttonExitGraph.TabIndex = 16;
@@ -362,11 +352,11 @@ namespace SmetaAndGraphs
             // buttonStartGraph
             // 
             this.buttonStartGraph.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonStartGraph.Location = new System.Drawing.Point(18, 366);
+            this.buttonStartGraph.Location = new System.Drawing.Point(6, 283);
             this.buttonStartGraph.Name = "buttonStartGraph";
-            this.buttonStartGraph.Size = new System.Drawing.Size(75, 23);
+            this.buttonStartGraph.Size = new System.Drawing.Size(161, 23);
             this.buttonStartGraph.TabIndex = 15;
-            this.buttonStartGraph.Text = "Старт";
+            this.buttonStartGraph.Text = "Формирование графика";
             this.buttonStartGraph.UseVisualStyleBackColor = true;
             this.buttonStartGraph.Visible = false;
             this.buttonStartGraph.Click += new System.EventHandler(this.buttonStartGraph_Click);
@@ -374,7 +364,7 @@ namespace SmetaAndGraphs
             // labelSelectData
             // 
             this.labelSelectData.AutoSize = true;
-            this.labelSelectData.Location = new System.Drawing.Point(98, 258);
+            this.labelSelectData.Location = new System.Drawing.Point(98, 205);
             this.labelSelectData.Name = "labelSelectData";
             this.labelSelectData.Size = new System.Drawing.Size(152, 13);
             this.labelSelectData.TabIndex = 11;
@@ -385,7 +375,7 @@ namespace SmetaAndGraphs
             // 
             this.groupBox2.Controls.Add(this.radioButAmountDays);
             this.groupBox2.Controls.Add(this.radioButAmountPeople);
-            this.groupBox2.Location = new System.Drawing.Point(34, 139);
+            this.groupBox2.Location = new System.Drawing.Point(34, 90);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(564, 50);
             this.groupBox2.TabIndex = 9;
@@ -421,7 +411,7 @@ namespace SmetaAndGraphs
             // 
             this.butSaveGraph.Location = new System.Drawing.Point(241, 19);
             this.butSaveGraph.Name = "butSaveGraph";
-            this.butSaveGraph.Size = new System.Drawing.Size(160, 52);
+            this.butSaveGraph.Size = new System.Drawing.Size(160, 36);
             this.butSaveGraph.TabIndex = 6;
             this.butSaveGraph.Text = "Выбрать папку для сохранения графиков";
             this.butSaveGraph.UseVisualStyleBackColor = true;
@@ -431,7 +421,7 @@ namespace SmetaAndGraphs
             // 
             this.butSelectOneSmeta.Location = new System.Drawing.Point(34, 19);
             this.butSelectOneSmeta.Name = "butSelectOneSmeta";
-            this.butSelectOneSmeta.Size = new System.Drawing.Size(160, 52);
+            this.butSelectOneSmeta.Size = new System.Drawing.Size(160, 36);
             this.butSelectOneSmeta.TabIndex = 3;
             this.butSelectOneSmeta.Text = "Выбрать одну смету";
             this.butSelectOneSmeta.UseVisualStyleBackColor = true;
@@ -444,6 +434,30 @@ namespace SmetaAndGraphs
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // textBoxStatus
+            // 
+            this.textBoxStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxStatus.BackColor = System.Drawing.SystemColors.ScrollBar;
+            this.textBoxStatus.Location = new System.Drawing.Point(-4, 328);
+            this.textBoxStatus.Multiline = true;
+            this.textBoxStatus.Name = "textBoxStatus";
+            this.textBoxStatus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBoxStatus.Size = new System.Drawing.Size(791, 99);
+            this.textBoxStatus.TabIndex = 11;
+            // 
+            // textBoxStatusGr
+            // 
+            this.textBoxStatusGr.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxStatusGr.BackColor = System.Drawing.SystemColors.ScrollBar;
+            this.textBoxStatusGr.Location = new System.Drawing.Point(-4, 312);
+            this.textBoxStatusGr.Multiline = true;
+            this.textBoxStatusGr.Name = "textBoxStatusGr";
+            this.textBoxStatusGr.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBoxStatusGr.Size = new System.Drawing.Size(784, 111);
+            this.textBoxStatusGr.TabIndex = 29;
             // 
             // Form1
             // 
@@ -500,13 +514,14 @@ namespace SmetaAndGraphs
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
         private System.Windows.Forms.FontDialog fontDialog1;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.Button butStartChoise;
         private System.Windows.Forms.DateTimePicker dateTimePicker1;
         private System.Windows.Forms.Button butStartGraph;
         private System.Windows.Forms.Label labeAmountDays;
         private System.Windows.Forms.Label labelAmountPeople;
         private System.Windows.Forms.DomainUpDown changeColor;
         private System.Windows.Forms.Label labelColor;
+        private System.Windows.Forms.TextBox textBoxStatus;
+        private System.Windows.Forms.TextBox textBoxStatusGr;
     }
 }
 

@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Excel = Microsoft.Office.Interop.Excel;
 
-namespace ExcelEditor.bl
+namespace WpfAppSmetaGraf.Model
 {
     public class Expert : Worker
     {
         public Expert() : base()
         { }
 
-        protected override void ProcessSmeta(List<Excel.Workbook> listAktKStoOneSmeta, Excel.Workbook copySmeta, RangeFile processingArea, string adresSmeta,int size,ref string _textError)
+        protected override void ProcessSmeta(List<Excel.Workbook> listAktKStoOneSmeta, Excel.Workbook copySmeta, RangeFile processingArea, string adresSmeta, int size, ref string _textError)
         {
             object misValue;
             Excel.Worksheet sheetCopySmeta = copySmeta.Sheets[1];
@@ -49,63 +49,63 @@ namespace ExcelEditor.bl
                 string error = null;
                 string[] nameAktKS = new string[listAktKStoOneSmeta.Count];
                 if (listAktKStoOneSmeta.Count != 0)
-                {                   
+                {
                     Parallel.For(0, listAktKStoOneSmeta.Count, new ParallelOptions { MaxDegreeOfParallelism = 8 }, numKS =>
                     {
-                         Excel.Worksheet workSheetAktKS = listAktKStoOneSmeta[numKS].Sheets[1];
-                         Excel.Range firstAktKS = workSheetAktKS.Cells[1, 1];
-                         Excel.Range lastAktKS = workSheetAktKS.Cells[rangeSmetaOne.Rows.Count + rangeSmetaOne.Row, rangeSmetaOne.Columns.Count + rangeSmetaOne.Column];
-                         Excel.Range rangeAktKS = workSheetAktKS.get_Range(firstAktKS, lastAktKS);
-                         Dictionary<int, double> totalScopeWorkAktKSone = new Dictionary<int, double>();
-                         WorkWithAktKSExpert(workSheetAktKS, rangeAktKS, numKS, listAktKStoOneSmeta[numKS].FullName, ref error, ref nameAktKS, ref totalScopeWorkAktKSone);
-                         int[] keyScopeWorkforSmeta = totalScopeWorkForSmeta.Keys.ToArray();
-                         int[] keyWorkAktKS = totalScopeWorkAktKSone.Keys.ToArray();
-                         for (int i = 0; i < totalScopeWorkForSmeta.Count; i++)
-                         {
-                             for (int j = 0; j < totalScopeWorkAktKSone.Count; j++)
-                             {
+                        Excel.Worksheet workSheetAktKS = listAktKStoOneSmeta[numKS].Sheets[1];
+                        Excel.Range firstAktKS = workSheetAktKS.Cells[1, 1];
+                        Excel.Range lastAktKS = workSheetAktKS.Cells[rangeSmetaOne.Rows.Count + rangeSmetaOne.Row, rangeSmetaOne.Columns.Count + rangeSmetaOne.Column];
+                        Excel.Range rangeAktKS = workSheetAktKS.get_Range(firstAktKS, lastAktKS);
+                        Dictionary<int, double> totalScopeWorkAktKSone = new Dictionary<int, double>();
+                        WorkWithAktKSExpert(workSheetAktKS, rangeAktKS, numKS, listAktKStoOneSmeta[numKS].FullName, ref error, ref nameAktKS, ref totalScopeWorkAktKSone);
+                        int[] keyScopeWorkforSmeta = totalScopeWorkForSmeta.Keys.ToArray();
+                        int[] keyWorkAktKS = totalScopeWorkAktKSone.Keys.ToArray();
+                        for (int i = 0; i < totalScopeWorkForSmeta.Count; i++)
+                        {
+                            for (int j = 0; j < totalScopeWorkAktKSone.Count; j++)
+                            {
                                 if (keyScopeWorkforSmeta[i] == keyWorkAktKS[j])
                                 {
                                     totalScopeWorkForSmeta[keyWorkAktKS[j]] += totalScopeWorkAktKSone[keyWorkAktKS[j]];
                                     periodTimeWorkForSmeta[keyWorkAktKS[j]] += nameAktKS[numKS];
                                 }
-                             }
-                         }
-                         Marshal.FinalReleaseComObject(rangeAktKS);
-                         Marshal.FinalReleaseComObject(workSheetAktKS);
+                            }
+                        }
+                        Marshal.FinalReleaseComObject(rangeAktKS);
+                        Marshal.FinalReleaseComObject(workSheetAktKS);
                     });
                     for (int numKS = 0; numKS < listAktKStoOneSmeta.Count; numKS++)
                     {
                         misValue = System.Reflection.Missing.Value;
                         listAktKStoOneSmeta[numKS].Close(false, misValue, misValue);
                     }
-                    }
-                    _textError += error;
-                    RecordInFileExpert(sheetCopySmeta, rangeSmetaOne, insertColumnTotalScopeWork, numberLastColumnCellNote, totalScopeWorkForSmeta, periodTimeWorkForSmeta, adresSmeta, ref _textError);
-                    RecordFormulaExpert(sheetCopySmeta, rangeSmetaOne, keyCellConstructionWorkSmeta, insertColumnTotalScopeWork);
-                    FormatRecordCopySmeta(sheetCopySmeta, rangeSmetaOne, size);
-                    Excel.Range topLastColumnNote = sheetCopySmeta.Cells[rangeSmetaOne.Row, numberLastColumnCellNote + 1];
-                    Excel.Range bottomLastColumnNote = sheetCopySmeta.Cells[rangeSmetaOne.Rows.Count, numberLastColumnCellNote + 1];
-                    Excel.Range rangeLastColumnNote = sheetCopySmeta.get_Range(topLastColumnNote, bottomLastColumnNote);
-                    rangeLastColumnNote.ColumnWidth = 50;
-                    Marshal.FinalReleaseComObject(rangeSmetaOne);
-                    misValue = System.Reflection.Missing.Value;
-                    Marshal.FinalReleaseComObject(sheetCopySmeta);
-                    copySmeta.Close(true, misValue, misValue);
-                    Marshal.FinalReleaseComObject(copySmeta);
-                }            
+                }
+                _textError += error;
+                RecordInFileExpert(sheetCopySmeta, rangeSmetaOne, insertColumnTotalScopeWork, numberLastColumnCellNote, totalScopeWorkForSmeta, periodTimeWorkForSmeta, adresSmeta, ref _textError);
+                RecordFormulaExpert(sheetCopySmeta, rangeSmetaOne, keyCellConstructionWorkSmeta, insertColumnTotalScopeWork);
+                FormatRecordCopySmeta(sheetCopySmeta, rangeSmetaOne, size);
+                Excel.Range topLastColumnNote = sheetCopySmeta.Cells[rangeSmetaOne.Row, numberLastColumnCellNote + 1];
+                Excel.Range bottomLastColumnNote = sheetCopySmeta.Cells[rangeSmetaOne.Rows.Count, numberLastColumnCellNote + 1];
+                Excel.Range rangeLastColumnNote = sheetCopySmeta.get_Range(topLastColumnNote, bottomLastColumnNote);
+                rangeLastColumnNote.ColumnWidth = 50;
+                Marshal.FinalReleaseComObject(rangeSmetaOne);
+                misValue = System.Reflection.Missing.Value;
+                Marshal.FinalReleaseComObject(sheetCopySmeta);
+                copySmeta.Close(true, misValue, misValue);
+                Marshal.FinalReleaseComObject(copySmeta);
+            }
             else
             {
                 misValue = System.Reflection.Missing.Value;
                 for (int numKS = 0; numKS < listAktKStoOneSmeta.Count; numKS++)
-                    {
-                        listAktKStoOneSmeta[numKS].Close(false, misValue, misValue);
-                    }
+                {
+                    listAktKStoOneSmeta[numKS].Close(false, misValue, misValue);
+                }
                 Marshal.FinalReleaseComObject(sheetCopySmeta);
                 copySmeta.Close(true, misValue, misValue);
                 Marshal.FinalReleaseComObject(copySmeta);
                 throw new NullValueException($" Проверьте чтобы в {adresSmeta} было верно записано устойчивое выражение [№ пп] или [Кол.]\n");
-            }          
+            }
         }
 
         //получение столбца где будет записан столбец примечание для записи в него из каких актов КС-2 взяты объемы
@@ -157,7 +157,7 @@ namespace ExcelEditor.bl
 
         //метод меняет по ссылке массив строк - наименование Актов КС-2 за определенный период и заполняет словарь
         //где ключ -номер позиции по смете из Актов КС, значение выполнение по смете
-        private void WorkWithAktKSExpert(Excel.Worksheet workSheetAktKS, Excel.Range rangeAktKS, int numKS, string adresKs,ref string error, ref string[] nameAktKS, ref Dictionary<int, double> totalScopeWorkAktKSone)
+        private void WorkWithAktKSExpert(Excel.Worksheet workSheetAktKS, Excel.Range rangeAktKS, int numKS, string adresKs, ref string error, ref string[] nameAktKS, ref Dictionary<int, double> totalScopeWorkAktKSone)
         {
             try
             {
@@ -189,7 +189,7 @@ namespace ExcelEditor.bl
                     throw new NullValueException($"Проверьте чтобы в {adresKs} было верно записано устойчивое выражение [по смете] или [за отчетный|(К|к)оличество]\n");
                 }
             }
-            catch(COMException ex)
+            catch (COMException ex)
             {
                 error += $"{ex.Message}\n";
             }
@@ -201,7 +201,7 @@ namespace ExcelEditor.bl
 
         //метод записывает в файл копии сметы объемы из Актов КС-2, все объемы работ по каждой позиции
         //суммируются в одном столбце, вставка столбца идет за столбцом объемы по смете  
-        private void RecordInFileExpert(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, int insertColumnTotalScopeWork, int numberLastColumnCellNote, Dictionary<int, double> totalScopeWorkforSmeta, Dictionary<int, string> periodTimeWorkforSmeta, string adresSmeta,ref string _textError)
+        private void RecordInFileExpert(Excel.Worksheet SheetcopySmetaOne, Excel.Range rangeSmetaOne, int insertColumnTotalScopeWork, int numberLastColumnCellNote, Dictionary<int, double> totalScopeWorkforSmeta, Dictionary<int, string> periodTimeWorkforSmeta, string adresSmeta, ref string _textError)
         {
             int pozSmeta;
             for (int j = rangeSmetaOne.Row + 4; j < rangeSmetaOne.Rows.Count + rangeSmetaOne.Row + 4; j++)
@@ -217,8 +217,8 @@ namespace ExcelEditor.bl
                         SheetcopySmetaOne.Cells[j, numberLastColumnCellNote] = periodTimeWorkforSmeta[pozSmeta];
                     }
                     catch (FormatException ex)
-                    {                     
-                        _textError+= $"{ex.Message}\n";
+                    {
+                        _textError += $"{ex.Message}\n";
                     }
                 }
             }

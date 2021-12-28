@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="WpfAppSmetaGraf.Model.AllContext" Collapsed="true">
+    <Position X="4.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAQAAAAAAAAAgAQAAAAAAAAAA=</HashCode>
+      <FileName>Model\AllContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.CheckIt" Collapsed="true">
+    <Position X="7.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>Model\CheckIt.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.DataInput" Collapsed="true">
+    <Position X="7.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAIAA=</HashCode>
+      <FileName>Model\DataInput.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.Day" Collapsed="true">
+    <Position X="6.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAABAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\Day.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.Expert" Collapsed="true">
+    <Position X="4" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAAgAAAAAAAAAAAAAAAAAABAAQAAAAQAA=</HashCode>
+      <FileName>Model\Expert.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.Graph" Collapsed="true">
+    <Position X="3" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAASAAAAAAAAAAAAAAAAQAQAAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>Model\Graph.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.GraphWork" Collapsed="true">
+    <Position X="5.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgchQAhCggEAAAAIAQCAADACAAECIUABIAwEAgAAABA=</HashCode>
+      <FileName>Model\GraphWork.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.NullValueException" Collapsed="true">
+    <Position X="0.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\ModelWork.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.DontHaveExcelException" Collapsed="true">
+    <Position X="0.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\ModelWork.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.ModelWork" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="5.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QSRANIEEBIKAAAgBigCBQABECAiABkACAAVggCMAABE=</HashCode>
+      <FileName>Model\ModelWork.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.ParserExc" Collapsed="true">
+    <Position X="4" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACBAAIAAAAAAEAAFAAAAAAQAIAAAUBAEAAAQgBBACA=</HashCode>
+      <FileName>Model\ParserExc.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.RangeFile" Collapsed="true">
+    <Position X="7.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAgAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\RangeFile.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.RegexReg" Collapsed="true">
+    <Position X="7.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAASJAAAAAAAAIAAAAAAAAAACAAAgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\RegexReg.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.Table" Collapsed="true">
+    <Position X="4.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAQAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\Table.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.Tehnadzor" Collapsed="true">
+    <Position X="5.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAAAAEgAAAAAAAAAAAAAAAAAQAgABAAAAAAA=</HashCode>
+      <FileName>Model\Tehnadzor .cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Model.Worker" Collapsed="true">
+    <Position X="4.75" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQABCBMCAAAAAgAQAAEAAAAAAQIAAgAAAQACAACAAAA=</HashCode>
+      <FileName>Model\Worker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.Infrastructure.RelayCommand" Collapsed="true">
+    <Position X="1.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEACAAQAAECAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Infrastructure\RelayCommand.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="WpfAppSmetaGraf.ViewModel.MainWindowViewModel" Collapsed="true">
+    <Position X="3" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>FQAIEICqgABBAAABVFhgAIEQCCgEEBAEBQGQQBABBSA=</HashCode>
+      <FileName>ViewModel\MainWindowViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.ViewModel.MessageService" Collapsed="true">
+    <Position X="1.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAgAAAAAAAAAAAQAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModel\MessageService.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WpfAppSmetaGraf.ViewModel.ViewModelBase" Collapsed="true">
+    <Position X="3" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAIAAAAAAAgAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModel\ViewModelBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Interface Name="WpfAppSmetaGraf.Model.IModelWork" Collapsed="true">
+    <Position X="5.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QSQAFIEABIAAAAgBggCAAAAAAAgAAgACAAAAACIAAAE=</HashCode>
+      <FileName>Model\ModelWork.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="XlInsertShiftDirection" Collapsed="true">
+    <Position X="10" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\ParserExc.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
